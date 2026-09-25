@@ -143,7 +143,7 @@ export class Booth {
     if (timer) {
       tm = stepTimer(timer, {
         onTick: (left) => {
-          if (left === 10 && timer > 20) this.say('hurry');
+          if (left === 10 && timer > 20) this.sayFirst(['hurry10', 'hurry']);
         },
       });
       this.timers.add(tm);
@@ -168,6 +168,12 @@ export class Booth {
   /** Speak one of the theme's voice lines by key (missing keys stay silent). */
   say(key, extra = {}) {
     this.speak(this.theme.lines?.[key], extra);
+  }
+
+  /** Speak the first of several keys the theme defines (e.g. 'hurry10' → 'hurry'). */
+  sayFirst(keys, extra = {}) {
+    const k = keys.find((x) => this.theme.lines?.[x]);
+    if (k) this.say(k, extra);
   }
 
   /** Speak a literal line: string, { text, lang, sub } or an array to pick from. */

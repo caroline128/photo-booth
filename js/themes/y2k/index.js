@@ -25,7 +25,7 @@ export default {
   inspiration: '日本プリクラ（平成辣妹 / Y2K 复刻机）',
   price: 3,
   badge: 'Y2K',
-  screenText: '6 SHOTS ♡',
+  screenText: '6 SHOTS',
   lang: 'ja-JP',
   voice: { pitch: 1.55, rate: 1.08 },
   colors: {
@@ -65,8 +65,10 @@ export default {
     retake: ja('もう一回いくよ！', '再来一张！'),
     filter: zh('选一个滤镜吧，美白粉还是闪亮亮？'),
     decorate: ja('落書きタイム！3分間だよ！', '涂鸦时间！一共 3 分钟！'),
-    // said at 30 s and 10 s left, so no fixed number here
     hurry: ja('いそいで～！もうすぐ時間だよ！', '快快快～时间快到啦！'),
+    hurry30: ja('あと30秒！', '还剩 30 秒！'),
+    hurry10: ja('あと10秒！いそいで～！', '还剩 10 秒！快快快～'),
+    move: ja('落書きブースに移動してね！', '请移动到旁边的涂鸦台～'),
     timeup: ja('タイムアップ！', '时间到！'),
     review: zh('确认一下，没问题就开始打印贴纸啦！'),
     print: ja('シールを印刷中だよ。ちょっと待ってね！', '贴纸打印中，稍等一下哦～'),
@@ -93,6 +95,8 @@ export default {
   filterTime: 40,
   decorateTime: 180,
   decoSub: '落書き',
+  // like a real purikura: shoot in one booth, doodle in the next
+  decoBooth: { title: '请移动到涂鸦台', text: '拍摄结束！请到旁边的落書きブース涂鸦～', sub: 'RAKUGAKI BOOTH →', icon: '💃' },
   options: [
     {
       id: 'mori',

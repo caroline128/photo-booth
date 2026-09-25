@@ -162,7 +162,7 @@ export async function decorate(b) {
     warnAt: 15,
     onTick: (left) => {
       s.decoLeft = left;
-      if (left === 30 || left === 10) b.say('hurry');
+      if (left === 30 || left === 10) b.sayFirst([`hurry${left}`, 'hurry']);
     },
   });
   b.timers.add(timer);
