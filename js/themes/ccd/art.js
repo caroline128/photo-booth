@@ -287,12 +287,18 @@ export function dateStamp(ctx, text, x, y, h, { align = 'right', color = '#ff7a1
   return width;
 }
 
-/** The date a digicam would burn in: session date, optionally "time-travelled" to 2005. */
+/** The date a digicam would burn in: session date, optionally "time-travelled" to 2005 (month/day kept). */
 export function shotDate(info = {}) {
   const d = new Date(info.date || Date.now());
-  if (info.options?.year === '2005') d.setFullYear(2005);
-  return d;
+  return { y: info.options?.year === '2005' ? 2005 : d.getFullYear(), m: d.getMonth() + 1, d: d.getDate() };
 }
+
+/** '05 08 23 */
+const pad2 = (n) => String(n).padStart(2, '0');
+export const stampText = (info) => {
+  const t = shotDate(info);
+  return `'${String(t.y).slice(2)} ${pad2(t.m)} ${pad2(t.d)}`;
+};
 
 const serialOf = (info) => `No.${String(info.serial || 0).padStart(6, '0')}`;
 
@@ -1312,7 +1318,7 @@ function miniSlot(ctx, s, info, sk) {
     decoHeart(ctx, s.x + 16, s.y + s.h - 16, 12, sk.heart, sk);
   }
   // rectangular stickers keep the camera's burned-in date (hearts / ovals crop that corner away)
-  if (s.deco === 'stars' || s.deco === 'lace') dateStamp(ctx, stamp(shotDate(info), 'ccd'), s.x + s.w - 12, s.y + s.h - 12, 19);
+  if (s.deco === 'stars' || s.deco === 'lace') dateStamp(ctx, stampText(info), s.x + s.w - 12, s.y + s.h - 12, 19);
 }
 
 function miniOver(ctx, L, info, sk) {
@@ -1336,7 +1342,7 @@ function miniOver(ctx, L, info, sk) {
 
 /** Date + serial on a small dark LCD chip, centred at (x, y). */
 function footLine(ctx, x, y, info, sk) {
-  const date = stamp(shotDate(info), 'ccd');
+  const date = stampText(info);
   const serial = serialOf(info);
   ctx.save();
   ctx.font = `400 46px ${LCD}`;
@@ -1367,7 +1373,7 @@ function gridSlot(ctx, s, info, sk) {
   ctx.strokeStyle = sk.photoLine;
   ctx.stroke();
   ctx.restore();
-  dateStamp(ctx, stamp(shotDate(info), 'ccd'), s.x + s.w - 24, s.y + s.h - 24, 36);
+  dateStamp(ctx, stampText(info), s.x + s.w - 24, s.y + s.h - 24, 36);
 }
 
 function gridOver(ctx, L, info, sk) {
@@ -1575,7 +1581,7 @@ function phoneSlot(ctx, s, info) {
   ctx.strokeStyle = 'rgba(0,0,0,0.5)';
   ctx.stroke();
   ctx.restore();
-  dateStamp(ctx, stamp(shotDate(info), 'ccd'), s.x + s.w - 26, s.y + s.h - 24, 42);
+  dateStamp(ctx, stampText(info), s.x + s.w - 26, s.y + s.h - 24, 42);
 }
 
 function envelope(ctx, x, y, w, h, color) {
@@ -2111,7 +2117,7 @@ const SKINS = {
     tag: (ctx, x, y, size, align) => label(ctx, TXT.diaryTag, x, y, { font: CUTE, size: size * 1.1, fill: '#ff6f9f', stroke: '#ffffff', sw: 0.3, align }),
     slogan(ctx, x, y, size, info) {
       const d = shotDate(info);
-      const t = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 晴 · 好朋友一辈子`;
+      const t = `${d.y}年${d.m}月${d.d}日 晴 · 好朋友一辈子`;
       label(ctx, t, x, y, { font: CUTE, size: size * 0.86, fill: '#3b5bdb', stroke: '#ffffff', sw: 0.2 });
     },
     extra(ctx, L) {
