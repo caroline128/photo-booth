@@ -1372,11 +1372,12 @@
 
 .sticker-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 6px;
 }
 
 .sticker-btn {
+  min-width: 0;
   aspect-ratio: 1;
   display: grid;
   place-items: center;
@@ -1456,7 +1457,7 @@
 
 .pen-bar {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
   margin-bottom: 10px;
 }
@@ -1951,7 +1952,7 @@
     padding: 10px;
   }
   .sticker-grid {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
   .coin-slot-big {
     width: 150px;
