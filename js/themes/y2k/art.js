@@ -358,9 +358,9 @@ function zebra(ctx, W, H, { base, ink, band = 80, seed = 1, tilt = 0.4 }) {
     for (let i = xs.length - 1; i >= 0; i--) ctx.lineTo(xs[i], mid(xs[i]) + th(xs[i]) / 2);
     ctx.closePath();
     ctx.fill();
-    if (r() < 0.6) {
-      // a thin tapered branch peeling off into the gap
-      const fx = r() * W;
+    const fx = r() * W;
+    if (r() < 0.6 && th(fx) > thick * 0.85) {
+      // a thin tapered branch peeling off into the gap (only where the stripe is full width)
       const len = band * (1.2 + r() * 1.4);
       const dir = r() < 0.5 ? -1 : 1;
       const side = r() < 0.5 ? -1 : 1;
@@ -1224,8 +1224,8 @@ export const layouts = [
       [770, 632, 26, 1],
       [1120, 980, 30, 4],
       [700, 198, 32, 0],
-      [600, 1756, 22, 0],
     ],
+    mode: { x: 600, y: 1756, size: 30 },
   },
   {
     ...gridLayout({ id: 'grid6', name: '六宫格', cols: 2, rows: 3, W: 1200, H: 1800, pad: 70, gap: 50, top: 176, bottom: 140, shape: 'round', r: 36 }),
@@ -1233,12 +1233,12 @@ export const layouts = [
     logo: { x: 600, y: 92, size: 80 },
     date: { x: 64, y: 1732, size: 38, align: 'left' },
     serial: { x: 1136, y: 1732, size: 30, align: 'right' },
+    mode: { x: 600, y: 1732, size: 30 },
     spots: [
       [116, 92, 44, 0],
       [1084, 92, 44, 1],
       [600, 662, 30, 3],
       [600, 1174, 30, 0],
-      [600, 1732, 24, 0],
       [36, 662, 20, 2],
       [1164, 1174, 20, 2],
       [1164, 420, 18, 2],
@@ -1372,6 +1372,20 @@ function label(ctx, text, { x, y, size, align = 'center' }, st, font = FONT.pixe
   ctx.restore();
 }
 
+/** The chosen 盛れ look, printed like the mode name on a real purikura sheet. */
+function modeTag(ctx, text, { x, y, size }, st) {
+  ctx.save();
+  ctx.font = `400 ${size}px ${FONT.pixel}`;
+  const w = ctx.measureText(text).width;
+  label(ctx, text, { x, y, size }, st);
+  for (const s of [-1, 1]) {
+    heartPath(ctx, x + s * (w / 2 + size * 0.95), y, size * 0.34);
+    ctx.fillStyle = st.logo.fill[st.logo.fill.length - 1];
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
 /** Perforation line above the mini seals, with a little tab label. */
 function perforation(ctx, L, st) {
   const { y, label: txt } = L.cut;
@@ -1427,6 +1441,7 @@ function frame({ id, name, paper, style }) {
         if (L.logo) logo(ctx, L.logo, style.logo);
         if (L.date) label(ctx, stamp(info.date || new Date()), L.date, style);
         if (L.serial) label(ctx, `No.${String(info.serial || 0).padStart(4, '0')}`, L.serial, style);
+        if (L.mode) modeTag(ctx, info.options?.mori === 'heisei' ? 'HEISEI GAL MODE' : 'REIWA NATURAL MODE', L.mode, style);
       },
     },
   };

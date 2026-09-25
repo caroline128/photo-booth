@@ -47,7 +47,7 @@ export default {
     // frames draw synchronously, so their fonts are preloaded; stickers and
     // text stamps fetch their own glyphs through `fontSpec`
     load: ['Mochiy Pop One', 'VT323'],
-    text: 'PURIPARA ミニシール No.0123456789',
+    text: 'PURIPARA ミニシール No.0123456789 HEISEI GAL REIWA NATURAL MODE',
   },
   bgm: { style: 'eurobeat', key: 61, prog: [0, 8, 10, 5] },
   lines: {
