@@ -252,7 +252,7 @@ export const props = [
       ${Array.from({ length: 12 }, (_, i) => {
         const t = (i + 0.5) / 12;
         const x = 18 + t * 184;
-        const y = 111 - 16 * 2 * t * (1 - t) * 2 + 1;
+        const y = 111 - 32 * t * (1 - t);
         return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5" fill="url(#pearl)"/>`;
       }).join('')}`,
     `<linearGradient id="sil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".6" stop-color="#e6e0f2"/><stop offset="1" stop-color="#bdb3d3"/></linearGradient>${PEARL_DEF}`),
@@ -417,7 +417,7 @@ export const stickers = [
   },
 
   // --- 偶像
-  { id: 'lightstick', name: '应援棒', group: '偶像', size: 0.2, outline: 0.06, svg: lightstickSvg(false) },
+  { id: 'stick', name: '应援棒', group: '偶像', size: 0.2, outline: 0.06, svg: lightstickSvg(false) },
   {
     id: 'bias',
     name: 'MY BIAS 徽章',
@@ -786,7 +786,7 @@ export const stickers = [
       <path d="${starD(140, 116, 18, 5, 0.52)}" fill="${LAV}" stroke="#9a7bff" stroke-width="4" stroke-linejoin="round"/>`),
   },
   {
-    id: 'bear',
+    id: 'bear-face',
     name: '小熊',
     group: '装饰',
     size: 0.24,
@@ -805,7 +805,7 @@ export const stickers = [
       <ellipse cx="40" cy="96" rx="11" ry="7" fill="#ff9fb8" opacity=".75"/><ellipse cx="120" cy="96" rx="11" ry="7" fill="#ff9fb8" opacity=".75"/>`),
   },
   {
-    id: 'bunny',
+    id: 'bunny-face',
     name: '小兔',
     group: '装饰',
     size: 0.22,

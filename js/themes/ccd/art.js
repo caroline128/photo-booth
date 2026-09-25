@@ -14,7 +14,7 @@ const LCD = '"VT323", "Press Start 2P", monospace';
 const CUTE = '"ZCOOL KuaiLe", "Noto Sans SC", sans-serif';
 const TECH = '"ZCOOL QingKe HuangYou", "Noto Sans SC", sans-serif';
 const HAND = '"Caveat", "ZCOOL KuaiLe", cursive';
-const ROUND = '"Mochiy Pop One", "ZCOOL KuaiLe", sans-serif';
+const SCRIPT = '"Pacifico", "ZCOOL KuaiLe", cursive';
 
 // ----------------------------------------------------------------- drawing helpers
 
@@ -223,8 +223,8 @@ function vSeg(ctx, x, ya, yb, t, g) {
 /** Adds seven-segment glyphs to the current path, baseline at y=0; returns the advance. */
 function sevenPath(ctx, text, h, draw = true) {
   const w = h * 0.54;
-  const t = h * 0.14;
-  const g = t * 0.2;
+  const t = h * 0.16;
+  const g = t * 0.18;
   let x = 0;
   for (const ch of String(text)) {
     const segs = SEVEN[ch];
@@ -264,24 +264,25 @@ function sevenPath(ctx, text, h, draw = true) {
   return x - h * 0.16;
 }
 
-/** Orange burned-in date, right-aligned at (x, y) = bottom-right corner. */
-export function dateStamp(ctx, text, x, y, h, { align = 'right', color = '#ff8f1f', glow = 'rgba(255,92,0,0.95)', alpha = 0.95 } = {}) {
+/** Orange burned-in date; (x, y) is the baseline end given by `align`. */
+export function dateStamp(ctx, text, x, y, h, { align = 'right', color = '#ff7a12', glow = 'rgba(255,84,0,0.8)', alpha = 0.96 } = {}) {
   const width = sevenPath(ctx, text, h, false);
-  const slant = 0.1;
   ctx.save();
   ctx.translate(align === 'right' ? x - width : align === 'center' ? x - width / 2 : x, y);
-  ctx.transform(1, 0, -slant, 1, 0, 0);
+  ctx.transform(1, 0, -0.1, 1, 0, 0);
   ctx.beginPath();
   sevenPath(ctx, text, h);
   ctx.globalAlpha = alpha;
+  // soft bloom, then a crisp core with a faint burnt edge so it reads on bright skin too
   ctx.shadowColor = glow;
-  ctx.shadowBlur = h * 0.45;
+  ctx.shadowBlur = h * 0.32;
   ctx.fillStyle = color;
   ctx.fill();
-  ctx.shadowBlur = h * 0.12;
-  ctx.globalAlpha = alpha * 0.6;
-  ctx.fillStyle = '#ffd08a';
+  ctx.shadowBlur = 0;
   ctx.fill();
+  ctx.lineWidth = Math.max(1, h * 0.035);
+  ctx.strokeStyle = 'rgba(110,28,0,0.4)';
+  ctx.stroke();
   ctx.restore();
   return width;
 }
@@ -346,16 +347,18 @@ export const props = [
     name: '非主流斜刘海',
     anchor: 'head',
     w: 3.0,
-    origin: [0.5, 0.324],
-    svg: svg(300, 340, `
+    origin: [0.5, 0.361],
+    svg: svg(300, 360, `
       <defs>
         <linearGradient id="hs" x1="0" y1="0" x2=".4" y2="1"><stop offset="0" stop-color="#3d2733"/><stop offset="1" stop-color="#1b1016"/></linearGradient>
         <linearGradient id="pk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff7ad9"/><stop offset="1" stop-color="#9b4dff"/></linearGradient>
       </defs>
+      <g transform="translate(0 20)">
       <g stroke="#0e0709" stroke-width="3" stroke-linejoin="round">
+        <path d="M84 40 L96 -4 L116 22 L136 -16 L152 16 L178 -12 L186 22 L214 0 L214 40 Z" fill="#2b1a24"/>
         <path d="M40 120 C18 170 14 232 22 300 L30 334 L40 292 L52 322 L58 270 C56 220 60 170 72 140 Z" fill="#26171f"/>
         <path d="M258 116 C282 148 292 190 286 234 L278 266 L270 228 L260 252 L254 204 C256 170 254 142 242 126 Z" fill="#26171f"/>
-        <path d="M24 214 C8 120 52 14 152 8 C252 14 296 110 280 212 C270 168 262 132 232 106 L72 106 C44 130 32 170 24 214 Z" fill="url(#hs)"/>
+        <path d="M18 222 C-2 150 4 66 58 30 C100 4 198 -2 248 24 C294 52 306 138 284 218 C274 176 264 140 234 112 L70 112 C44 134 30 178 18 222 Z" fill="url(#hs)"/>
         <path d="M228 28 C180 28 110 48 70 98 C50 124 38 160 36 200 L44 262 L62 236 L74 282 L88 244 L104 288 L118 246 L134 264 L146 222 L158 240 L170 200 L178 206 L194 178 L210 190 L226 158 L246 166 C256 130 252 70 228 28 Z" fill="url(#hs)"/>
       </g>
       <path d="M214 40 C172 66 122 134 100 262 L112 244 C134 140 180 76 228 46 Z" fill="url(#pk)" opacity=".9"/>
@@ -364,7 +367,8 @@ export const props = [
         <path d="M60 140 C48 190 46 240 40 300"/><path d="M262 140 C274 170 278 200 276 240"/>
       </g>
       <path d="M84 44 C118 26 170 22 212 34" stroke="#fff" stroke-width="8" fill="none" opacity=".28" stroke-linecap="round"/>
-      <path d="M150 72 C132 92 120 112 112 140" stroke="#fff" stroke-width="5" fill="none" opacity=".2" stroke-linecap="round"/>`),
+      <path d="M150 72 C132 92 120 112 112 140" stroke="#fff" stroke-width="5" fill="none" opacity=".2" stroke-linecap="round"/>
+      </g>`),
   },
   {
     id: 'butterfly',
@@ -372,10 +376,10 @@ export const props = [
     anchor: 'head',
     pair: true,
     flipPair: true,
-    w: 1.05,
-    dx: 0.88,
-    dy: -0.12,
-    rot: 0.3,
+    w: 1.3,
+    dx: 0.86,
+    dy: -0.22,
+    rot: 0.35,
     origin: [0.5, 0.6],
     svg: svg(170, 120, `
       ${butterflySvg(38, 84, 0.55, 18, '#9fd8ff', '#d6f0ff')}
@@ -416,7 +420,7 @@ export const props = [
     anchor: 'side',
     w: 1.1,
     rot: 0.16,
-    dy: -0.1,
+    dx: -0.4,
     origin: [0.6, 0.55],
     svg: PHONE_SVG,
   },
@@ -439,19 +443,19 @@ export const props = [
     id: 'buckethat',
     name: '渔夫帽',
     anchor: 'head',
-    w: 3.0,
-    dy: 0.04,
-    origin: [0.5, 0.77],
+    w: 3.2,
+    dy: 0.08,
+    origin: [0.5, 0.78],
     svg: svg(240, 156, `
       <defs><linearGradient id="dn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9dbef0"/><stop offset="1" stop-color="#5a82c4"/></linearGradient></defs>
-      <path d="M52 114 C48 62 72 20 120 18 C168 20 192 62 188 114 Z" fill="url(#dn)" stroke="#34558c" stroke-width="3"/>
-      <path d="M60 70 C90 60 150 60 180 70 M56 92 C90 82 150 82 184 92" stroke="#e3eeff" stroke-width="2.5" stroke-dasharray="7 5" fill="none"/>
-      <ellipse cx="120" cy="24" rx="36" ry="7" fill="#a9c8f5" stroke="#34558c" stroke-width="2"/>
-      <path d="M50 102 C90 112 150 112 190 102 L191 118 C150 128 90 128 49 118 Z" fill="#ff8fc8" stroke="#34558c" stroke-width="3"/>
-      <path d="M48 116 C20 120 6 132 4 146 C60 154 180 154 236 146 C234 132 220 120 192 116 C150 126 90 126 48 116 Z" fill="url(#dn)" stroke="#34558c" stroke-width="3"/>
-      <path d="M22 138 C70 144 170 144 218 138" stroke="#e3eeff" stroke-width="2.5" stroke-dasharray="7 5" fill="none"/>
-      <path d="${starD(158, 80, 13)}" fill="#fff27a" stroke="#34558c" stroke-width="2" stroke-linejoin="round"/>
-      <path d="M78 40 C92 30 108 26 122 26" stroke="#fff" stroke-width="5" fill="none" opacity=".45" stroke-linecap="round"/>`),
+      <path d="M36 116 C32 62 64 26 120 24 C176 26 208 62 204 116 Z" fill="url(#dn)" stroke="#34558c" stroke-width="3"/>
+      <path d="M44 74 C84 62 156 62 196 74 M40 96 C84 84 156 84 200 96" stroke="#e3eeff" stroke-width="2.5" stroke-dasharray="7 5" fill="none"/>
+      <ellipse cx="120" cy="30" rx="46" ry="8" fill="#a9c8f5" stroke="#34558c" stroke-width="2"/>
+      <path d="M34 102 C80 114 160 114 206 102 L207 120 C160 132 80 132 33 120 Z" fill="#ff8fc8" stroke="#34558c" stroke-width="3"/>
+      <path d="M30 118 C10 124 2 136 2 148 C60 156 180 156 238 148 C238 136 230 124 210 118 C160 130 80 130 30 118 Z" fill="url(#dn)" stroke="#34558c" stroke-width="3"/>
+      <path d="M18 141 C70 148 170 148 222 141" stroke="#e3eeff" stroke-width="2.5" stroke-dasharray="7 5" fill="none"/>
+      <path d="${starD(166, 82, 13)}" fill="#fff27a" stroke="#34558c" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M66 50 C84 38 104 34 122 34" stroke="#fff" stroke-width="5" fill="none" opacity=".45" stroke-linecap="round"/>`),
   },
   {
     id: 'kittyears',
@@ -643,7 +647,7 @@ function spriteSticker({ id, name, rows, pal, size = 0.2, group = '闪图' }) {
   return { id, name, group, size, ratio: rows.length / cols, outline: 0.07, draw: (ctx, w) => sprite(ctx, rows, 0, 0, w / cols, pal) };
 }
 
-const CLOUD = ['..WWW.....', '.WWWWW.WW.', 'WWWWWWWWWW', 'WWWWWWWWWW', '.GGGGGGGG.'];
+const CLOUD = ['...KKK....', '..KWWWK.K.', '.KWWWWWKWK', 'KWWWWWWWWK', 'KGGGGGGGGK', '.KKKKKKKK.'];
 
 export const stickers = [
   // ---- 火星文
@@ -743,8 +747,8 @@ export const stickers = [
           ctx.fillRect(Math.floor(i * px), Math.floor(j * px), Math.ceil(px) + 0.5, Math.ceil(px) + 0.5);
         }
       }
-      sprite(ctx, CLOUD, 0, px * 10, px, { W: '#ffffff', G: '#c9d6ea' });
-      sprite(ctx, CLOUD, px * 16, px * 10, px, { W: '#ffffff', G: '#c9d6ea' });
+      sprite(ctx, CLOUD, 0, px * 9, px, { W: '#ffffff', G: '#dbe6f7', K: '#7f95c4' });
+      sprite(ctx, CLOUD, px * 16, px * 9, px, { W: '#ffffff', G: '#dbe6f7', K: '#7f95c4' });
     },
   },
   {
@@ -1277,7 +1281,7 @@ function miniUnder(ctx, L, sk) {
   }
 }
 
-function miniSlot(ctx, s, sk) {
+function miniSlot(ctx, s, info, sk) {
   ctx.save();
   ctx.lineWidth = 4;
   ctx.strokeStyle = sk.rim;
@@ -1298,15 +1302,17 @@ function miniSlot(ctx, s, sk) {
     for (const [a, fr] of flowers) decoFlower(ctx, cx + Math.cos(a) * s.w * 0.5, cy + Math.sin(a) * s.h * 0.5, fr, sk);
   } else if (s.deco === 'stars') {
     decoStar(ctx, s.x + 8, s.y + 10, 30, sk.star, sk, -0.25);
-    decoStar(ctx, s.x + s.w - 10, s.y + s.h - 12, 22, sk.star2, sk, 0.2);
+    decoStar(ctx, s.x + 2, s.y + s.h - 12, 20, sk.star2, sk, 0.2);
     decoStar(ctx, s.x + s.w * 0.66, s.y - 2, 12, sk.star2, sk, 0.1);
-    decoStar(ctx, s.x - 2, s.y + s.h * 0.7, 11, sk.star, sk, -0.1);
+    decoStar(ctx, s.x + s.w + 2, s.y + s.h * 0.56, 11, sk.star, sk, -0.1);
     decoSpark(ctx, s.x + s.w - 20, s.y + 26, 14, sk);
-    decoSpark(ctx, s.x + 30, s.y + s.h - 26, 10, sk);
+    decoSpark(ctx, s.x + 28, s.y + s.h - 46, 10, sk);
   } else {
     bow(ctx, cx, s.y + 4, 30, sk.ribbon);
-    decoHeart(ctx, s.x + s.w - 14, s.y + s.h - 14, 12, sk.heart, sk);
+    decoHeart(ctx, s.x + 16, s.y + s.h - 16, 12, sk.heart, sk);
   }
+  // rectangular stickers keep the camera's burned-in date (hearts / ovals crop that corner away)
+  if (s.deco === 'stars' || s.deco === 'lace') dateStamp(ctx, stamp(shotDate(info), 'ccd'), s.x + s.w - 12, s.y + s.h - 12, 19);
 }
 
 function miniOver(ctx, L, info, sk) {
@@ -1328,9 +1334,27 @@ function miniOver(ctx, L, info, sk) {
 
 // ----------------------------------------------------------------- frame parts: 2×2 grid
 
+/** Date + serial on a small dark LCD chip, centred at (x, y). */
 function footLine(ctx, x, y, info, sk) {
-  dateStamp(ctx, stamp(shotDate(info), 'ccd'), x - 22, y + 17, 34);
-  label(ctx, serialOf(info), x + 22, y, { font: LCD, size: 46, fill: sk.ink, align: 'left', stroke: sk.inkStroke, sw: 0.16 });
+  const date = stamp(shotDate(info), 'ccd');
+  const serial = serialOf(info);
+  ctx.save();
+  ctx.font = `400 46px ${LCD}`;
+  const sw = ctx.measureText(serial).width;
+  ctx.restore();
+  const dw = sevenPath(ctx, date, 32, false);
+  const gap = 30;
+  const x0 = x - (dw + gap + sw) / 2;
+  rrect(ctx, x0 - 26, y - 31, dw + gap + sw + 52, 62, 31);
+  ctx.fillStyle = sk.chip;
+  ctx.fill();
+  if (sk.chipEdge) {
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = sk.chipEdge;
+    ctx.stroke();
+  }
+  dateStamp(ctx, date, x0, y + 16, 32, { align: 'left' });
+  label(ctx, serial, x0 + dw + gap, y + 1, { font: LCD, size: 46, fill: '#d8ffe9', align: 'left' });
 }
 
 function gridUnder(ctx, L, sk) {
@@ -1960,6 +1984,8 @@ const SKINS = {
     sparkGlow: 'rgba(255,110,210,0.95)',
     ink: '#ffe6f7',
     inkStroke: '#4a0f5c',
+    chip: 'rgba(38,8,62,0.82)',
+    chipEdge: 'rgba(255,190,235,0.6)',
     photoLine: 'rgba(255,255,255,0.9)',
     phone: { hi: '#ffffff', mid: '#d9dee6', lo: '#9aa3b0', edge: '#6e7886', key: '#fff4fb', keyText: '#b0407f', glow: '#ff9ad5', ui: '#2a0f45', uiText: '#ffd6f0', charm: ['#ff5fb0', '#fff27a', '#b9a2ff'] },
     bg: bgDreamy,
@@ -1998,14 +2024,16 @@ const SKINS = {
     petal: '#eaf6ff',
     petalEdge: '#6fb6ff',
     center: '#2f6bff',
-    star: '#e3f6ff',
-    star2: '#6fe3ff',
+    star: '#8fd8ff',
+    star2: '#2f6bff',
     lace: '#e9f1fb',
     ribbon: '#2f6bff',
     spark: '#ffffff',
     sparkGlow: 'rgba(80,180,255,0.95)',
     ink: '#d8f2ff',
     inkStroke: '#061a4a',
+    chip: 'rgba(3,12,48,0.86)',
+    chipEdge: 'rgba(150,225,255,0.7)',
     photoLine: 'rgba(10,26,74,0.9)',
     phone: { hi: '#ffffff', mid: '#c8d3e2', lo: '#7d8ba0', edge: '#4d5a6e', key: '#eef6ff', keyText: '#1f47b8', glow: '#6fd0ff', ui: '#061a4a', uiText: '#bfe6ff', charm: ['#2f6bff', '#dff3ff', '#6fe3ff'] },
     bg: bgChrome,
@@ -2060,6 +2088,8 @@ const SKINS = {
     sparkGlow: null,
     ink: '#3b5bdb',
     inkStroke: null,
+    chip: '#39406a',
+    chipEdge: null,
     photoLine: 'rgba(0,0,0,0.15)',
     phone: { hi: '#ffffff', mid: '#e6e9ef', lo: '#b3bac6', edge: '#8a93a2', key: '#ffffff', keyText: '#3b5bdb', glow: '#9fd0ff', ui: '#fffaf0', uiText: '#3b5bdb', charm: ['#ff8fb1', '#ffe14a', '#8fd0ff'] },
     bg: bgDiary,
@@ -2090,8 +2120,8 @@ const SKINS = {
       const stripe = 'rgba(255,255,255,0.45)';
       if (L.id === 'grid4') {
         L.slots.forEach((s, i) => {
-          tape(ctx, s.x + 36, s.y - 4, 130, 42, -0.62, i % 2 ? blue : pink, stripe);
-          tape(ctx, s.x + s.w - 36, s.y - 4, 130, 42, 0.62, i % 2 ? pink : blue, stripe);
+          tape(ctx, s.x + 34, s.y + 8, 128, 40, -0.62, i % 2 ? blue : pink, stripe);
+          tape(ctx, s.x + s.w - 34, s.y + 8, 128, 40, 0.62, i % 2 ? pink : blue, stripe);
         });
       } else if (L.id === 'flip') {
         tape(ctx, 220, 70, 190, 56, -0.7, pink, stripe);
@@ -2114,7 +2144,7 @@ const SKINS = {
     petal: '#ffffff',
     petalEdge: '#ff8fc8',
     center: '#ff5fa2',
-    star: '#ffffff',
+    star: '#ff8fc8',
     star2: '#ffe14a',
     lace: '#ffffff',
     ribbon: '#ff5fa2',
@@ -2122,8 +2152,10 @@ const SKINS = {
     sparkGlow: 'rgba(255,100,180,0.8)',
     ink: '#ff4f9a',
     inkStroke: '#ffffff',
+    chip: 'rgba(122,24,78,0.82)',
+    chipEdge: '#ffffff',
     photoLine: 'rgba(255,143,200,0.9)',
-    phone: { hi: '#fff6fb', mid: '#f3d3e4', lo: '#d69ab9', edge: '#a8577f', key: '#ffffff', keyText: '#d6468f', glow: '#ff8fc8', ui: '#ffe3f1', uiText: '#b8558c', charm: ['#ff5fa2', '#ffffff', '#8fd8ff'] },
+    phone: { hi: '#fff6fb', mid: '#f3d3e4', lo: '#d69ab9', edge: '#a8577f', key: '#ffffff', keyText: '#d6468f', glow: '#ff8fc8', ui: '#ffe3f1', uiText: '#b8558c', charm: ['#ff5fa2', '#ffe14a', '#8fd8ff'] },
     bg: bgBubble,
     gridMat(ctx, s) {
       mat(ctx, s, { pad: 16, r: 34, fill: '#ffffff', shadow: 'rgba(200,60,130,0.3)' });
@@ -2136,7 +2168,7 @@ const SKINS = {
       ctx.stroke();
       ctx.restore();
     },
-    logo: (ctx, x, y, size, align) => label(ctx, 'DIGI 2003', x, y, { font: ROUND, size: size * 1.08, fill: '#ffffff', stroke: '#ff5fa2', sw: 0.32, glow: 'rgba(255,255,255,0.9)', align }),
+    logo: (ctx, x, y, size, align) => label(ctx, 'DIGI 2003', x, y - size * 0.12, { font: SCRIPT, size: size * 1.25, fill: '#ffffff', stroke: '#ff5fa2', sw: 0.3, glow: 'rgba(255,255,255,0.9)', align }),
     tag: (ctx, x, y, size, align) => label(ctx, TXT.bubbleTag, x, y, { font: CUTE, size: size * 1.15, fill: ['#ffffff', '#ffe0f0'], stroke: '#ff5fa2', sw: 0.28, align }),
     slogan: (ctx, x, y, size) => label(ctx, TXT.bubbleSlogan, x, y, { font: CUTE, size, fill: ['#ffffff', '#ffd6ea'], stroke: '#ff4f9a', sw: 0.28 }),
     extra(ctx, L) {
@@ -2148,7 +2180,7 @@ const SKINS = {
       } else if (L.id === 'flip') {
         const r = rng(3);
         for (let i = 0; i < 9; i++) bubble(ctx, r() < 0.5 ? 40 + r() * 120 : L.W - 40 - r() * 120, 60 + r() * 1300, 20 + r() * 50);
-        bubble(ctx, 950, 150, 60);
+        bubble(ctx, 1012, 640, 56);
       } else {
         for (const [x, y, rad] of [[40, 40, 30], [L.W - 60, 36, 26], [L.W - 20, 150, 16], [30, L.H - 60, 34], [L.W - 50, L.H - 40, 30]]) bubble(ctx, x, y, rad);
       }
@@ -2177,6 +2209,8 @@ const SKINS = {
     sparkGlow: null,
     ink: '#6fe3ff',
     inkStroke: '#1b1030',
+    chip: '#0d0b2a',
+    chipEdge: '#ffffff',
     photoLine: '#1b1030',
     phone: { hi: '#e9edf5', mid: '#aab3c4', lo: '#5d6780', edge: '#2c3348', key: '#e3e9ff', keyText: '#1b1030', glow: '#6fe3ff', ui: '#0d0b2a', uiText: '#6fe3ff', charm: ['#ff4f9a', '#ffe14a', '#6fe3ff'] },
     bg: bgPixel,
@@ -2195,21 +2229,33 @@ const SKINS = {
     },
     logo: (ctx, x, y, size, align) => pixelShadow(ctx, 'DIGI 2003', x, y, size, align, PIX, ['#ffffff', '#6fe3ff', '#ff4f9a']),
     tag: (ctx, x, y, size, align) => pixelShadow(ctx, TXT.pixelTag, x, y, size * 1.1, align, TECH, ['#ffe14a', '#ff4f9a', '#1b1030']),
-    slogan: (ctx, x, y, size) => pixelShadow(ctx, TXT.pixelSlogan, x, y, size * 0.72, 'center', '"Press Start 2P", "ZCOOL QingKe HuangYou", monospace', ['#ffffff', '#ff4f9a', '#1b1030']),
+    slogan(ctx, x, y, size) {
+      // "LOADING 青春... 99%": pixel font for Latin, a CJK font (a bit larger) for 青春
+      const parts = [['LOADING ', PIX, size * 0.62], ['青春', TECH, size * 0.95], ['... 99%', PIX, size * 0.62]];
+      const widths = parts.map(([t, f, sz]) => {
+        ctx.font = `400 ${sz}px ${f}`;
+        return ctx.measureText(t).width;
+      });
+      let cx = x - widths.reduce((a, b) => a + b, 0) / 2;
+      parts.forEach(([t, f, sz], i) => {
+        pixelShadow(ctx, t, cx, y, sz, 'left', f, ['#ffffff', '#ff4f9a', '#1b1030']);
+        cx += widths[i];
+      });
+    },
     extra(ctx, L) {
       const r = rng(12);
       const pal = [{ Y: '#ffe14a', W: '#ffffff' }, { Y: '#6fe3ff', W: '#ffffff' }, { Y: '#ff7ad9', W: '#ffffff' }];
       if (L.id === 'grid4') {
         L.slots.forEach((s, i) => {
           sprite(ctx, PX_SPARK, s.x - 30, s.y - 30, 7, pal[i % 3]);
-          pixHeart(ctx, s.x + s.w + 4, s.y + s.h - 60, 54, { K: '#1b1030', P: '#ff4f9a', D: '#c21d6b', W: '#ffffff' });
+          pixHeart(ctx, s.x + s.w - 2, s.y + 26, 54, { K: '#1b1030', P: '#ff4f9a', D: '#c21d6b', W: '#ffffff' });
         });
       } else if (L.id === 'flip') {
         for (let i = 0; i < 12; i++) {
           const x = r() < 0.5 ? 20 + r() * 120 : L.W - 150 + r() * 110;
           sprite(ctx, i % 3 ? PX_TWINKLE : PX_SPARK, x, 40 + r() * 1080, 6 + Math.floor(r() * 3), pal[i % 3]);
         }
-        pixHeart(ctx, 1110, 1180, 90, { K: '#1b1030', P: '#ff4f9a', D: '#c21d6b', W: '#ffffff' });
+        pixHeart(ctx, 1104, 1010, 84, { K: '#1b1030', P: '#ff4f9a', D: '#c21d6b', W: '#ffffff' });
       }
     },
   },
@@ -2227,7 +2273,7 @@ function makeFrame(id, name, sk) {
         else if (L.id === 'flip') phoneUnder(ctx, L, sk);
       },
       slot(ctx, s, i, info) {
-        if (s.kind === 'mini') miniSlot(ctx, s, sk);
+        if (s.kind === 'mini') miniSlot(ctx, s, info, sk);
         else if (s.kind === 'grid') gridSlot(ctx, s, info, sk);
         else if (s.kind === 'phone') phoneSlot(ctx, s, info);
       },

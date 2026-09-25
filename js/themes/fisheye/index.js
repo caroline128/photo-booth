@@ -123,8 +123,7 @@ export default {
     return {
       fisheye: k,
       circle,
-      // round view: a little zoom keeps the smeared edge thin (the frame ring covers it)
-      zoom: circle ? 1.1 : 1,
+      zoom: 1,
       vignette: circle ? 0.35 : 0.5 + k * 0.2,
       chroma: 0.25 + k * 0.7,
       sharpen: 0.15,
@@ -133,10 +132,10 @@ export default {
   previewFx: { saturation: 1.15, contrast: 1.06 },
   filters: [
     { id: 'vivid', name: '鲜艳街头', desc: '饱和度拉满', fx: { saturation: 1.4, contrast: 1.14, curve: 0.18, exposure: 0.05, sharpen: 0.25 } },
-    { id: 'night', name: '夜视仪', desc: '绿油油的红外夜视', fx: { tone: 'duo', duoA: [0.01, 0.05, 0.02], duoB: [0.74, 1, 0.46], exposure: 0.3, contrast: 1.35, curve: 0.2, grain: 0.55, posterize: 9, sharpen: 0.3 } },
+    { id: 'night', name: '夜视仪', desc: '绿油油的红外夜视', fx: { tone: 'duo', duoA: [0, 0.04, 0.01], duoB: [0.64, 1, 0.4], exposure: -0.3, contrast: 1.42, curve: 0.25, vignette: 0.65, grain: 0.5, posterize: 10, sharpen: 0.3 } },
     { id: 'cctv', name: '监控画面', desc: '偏冷、噪点、压缩感', fx: { saturation: 0.35, temp: -0.5, tint: 0.12, contrast: 1.12, fade: 0.18, grain: 0.42, jpeg: 0.4, sharpen: 0.2 } },
-    { id: 'mono', name: '高反差黑白', desc: '街拍杂志感', fx: { tone: 'mono', contrast: 1.55, curve: 0.35, exposure: 0.05, grain: 0.28, sharpen: 0.3 } },
-    { id: 'xpro', name: '交叉冲印', desc: '偏黄绿、高反差', fx: { temp: 0.35, tint: 0.4, contrast: 1.32, curve: 0.3, saturation: 1.3, fade: 0.06, exposure: 0.06 } },
+    { id: 'mono', name: '高反差黑白', desc: '街拍杂志感', fx: { tone: 'mono', contrast: 1.5, curve: 0.35, exposure: -0.08, grain: 0.28, sharpen: 0.3 } },
+    { id: 'xpro', name: '交叉冲印', desc: '偏黄绿、高反差', fx: { temp: 0.3, tint: 0.55, contrast: 1.35, curve: 0.3, saturation: 1.35, fade: 0.08, exposure: 0.02 } },
   ],
   layouts,
   frames,
@@ -144,8 +143,8 @@ export default {
   placeholderTint: ['#3a3f38', '#2e332c'],
   textStyles: [
     { name: '漫画', font: '"Bangers", "ZCOOL KuaiLe", sans-serif', color: '#c6ff3d', stroke: '#111', strokeWidth: 0.18, outline: 0.03, chip: '#111' },
-    { name: '喷漆', font: '"Permanent Marker", "ZCOOL KuaiLe", cursive', color: '#ff6a2b', stroke: '#fff', strokeWidth: 0.12, outline: 0.02, chip: '#222' },
-    { name: '监控', font: '"VT323", "Noto Sans SC", monospace', color: '#e8ffe0', stroke: '#000', strokeWidth: 0.14, outline: 0, chip: '#0b120b' },
+    { name: '喷漆', font: '"Permanent Marker", "ZCOOL KuaiLe", cursive', color: '#ff6a2b', stroke: '#111', strokeWidth: 0.14, outline: 0.03, chip: '#222' },
+    { name: '监控', font: '"VT323", "Noto Sans SC", monospace', color: '#e8ffe0', stroke: '#000', strokeWidth: 0.2, outline: 0, chip: '#0b120b' },
   ],
   phrases: ['DING DONG!', '叮咚～', '谁在门口？', 'BIG HEAD!', '脸好大！', '凑近点！', '别看猫眼啦', 'WHO\'S THERE?'],
   pens: [

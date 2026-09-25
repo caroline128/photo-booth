@@ -72,7 +72,8 @@ function fitLines(ctx, text, w, h, font, { maxFs, lh, padEm }) {
 /**
  * The meme caption: heavy text with thick outline(s), shrunk to fit `box`,
  * one or two lines. st: { fill, gradient, stroke, strokeEm, outer: [[color, em]],
- * shadow: [color, dxEm, dyEm], family, weight, maxFs, lh, valign, rot }
+ * shadow: [color, dxEm, dyEm], family, weight, maxFs, lh, valign, rot, dry }
+ * With `dry` nothing is drawn; the result still tells the fitted size/width.
  */
 export function memeText(ctx, raw, box, st = {}) {
   const text = String(raw || '').replace(/\s*\n\s*/g, '\n').trim();
@@ -88,6 +89,13 @@ export function memeText(ctx, raw, box, st = {}) {
   const fit = fitLines(ctx, text, box.w, box.h, font, { maxFs: st.maxFs || box.h, lh, padEm });
   const fs = Math.max(8, Math.floor(fit.fs));
   const { lines } = fit;
+  if (st.dry) {
+    ctx.save();
+    ctx.font = font(fs);
+    const width = Math.max(...lines.map((l) => ctx.measureText(l).width)) + fs * padEm;
+    ctx.restore();
+    return { fs, lines, width };
+  }
   const blockH = fs * lh * lines.length;
   const edge = (fs * padEm) / 2;
   let top = box.y + box.h - blockH - edge * 0.5;
@@ -139,8 +147,11 @@ export function memeText(ctx, raw, box, st = {}) {
   return { fs, lines, top, bottom: top + blockH };
 }
 
-/** Chunky bitmap text: drawn tiny, alpha-thresholded, then blown up without smoothing. */
-function pixelText(ctx, raw, box, { color = '#fff', shadow = null, family = HEAVY, weight = 700, maxScale = 8 } = {}) {
+/**
+ * Chunky bitmap text: drawn tiny, alpha-thresholded, then blown up without
+ * smoothing (16px regular CJK thresholded at ~90 reads like a real bitmap font).
+ */
+function pixelText(ctx, raw, box, { color = '#fff', shadow = null, family = HEAVY, weight = 400, threshold = 90, maxScale = 8 } = {}) {
   const text = String(raw || '').trim();
   if (!text) return null;
   warm(`${weight} 16px ${family}`, text);
@@ -168,7 +179,7 @@ function pixelText(ctx, raw, box, { color = '#fff', shadow = null, family = HEAV
     x.fillStyle = col;
     best.lines.forEach((l, i) => x.fillText(l, best.tw / 2, 1 + best.glyph * 1.2 * (i + 0.5)));
     const img = x.getImageData(0, 0, c.width, c.height);
-    for (let i = 3; i < img.data.length; i += 4) img.data[i] = img.data[i] > 110 ? 255 : 0;
+    for (let i = 3; i < img.data.length; i += 4) img.data[i] = img.data[i] > threshold ? 255 : 0;
     x.putImageData(img, 0, 0);
     return c;
   };
@@ -472,8 +483,8 @@ export const props = [
     id: 'meme-afro',
     name: '彩虹爆炸头',
     anchor: 'crown',
-    w: 3.9,
-    dy: 0.02,
+    w: 3.65,
+    dy: 0.1,
     origin: [0.5, 0.52],
     svg: afroSvg(),
   },
@@ -567,16 +578,17 @@ export const props = [
     anchor: 'cheeks',
     pair: true,
     flipPair: true,
-    w: 0.62,
+    w: 0.64,
     dx: -0.28,
     dy: -0.7,
     origin: [0.5, 0],
     svg: svg(
-      70,
-      220,
-      `<path d="M13 0 L57 0 C60 40 51 80 57 120 C61 150 59 176 55 192 L17 192 C13 176 11 150 15 120 C21 80 11 40 13 0 Z" fill="#8fdcff" stroke="#2a8fd6" stroke-width="5" stroke-linejoin="round"/>
-      <path d="M26 12 C29 52 22 92 28 134 C31 156 30 170 28 180" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round" opacity=".85"/>
-      <g fill="#8fdcff" stroke="#2a8fd6" stroke-width="4"><circle cx="24" cy="205" r="8"/><circle cx="50" cy="212" r="6"/></g>`,
+      80,
+      236,
+      `<path d="M24 0 C21 22 15 42 18 64 C21 86 11 106 14 130 C17 154 9 172 11 190 Q13 208 32 208 L50 208 Q69 208 69 190 C71 172 63 154 66 130 C69 106 59 86 62 64 C65 42 60 22 57 0 Z" fill="#8fdcff" stroke="#2a8fd6" stroke-width="5" stroke-linejoin="round"/>
+      <path d="M33 10 C31 34 26 52 28 74 C30 96 22 116 25 138 C27 156 22 170 24 184" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round" opacity=".85"/>
+      <g fill="#fff" opacity=".7"><circle cx="50" cy="48" r="4"/><circle cx="54" cy="112" r="3.5"/><circle cx="48" cy="164" r="4.5"/></g>
+      <g fill="#8fdcff" stroke="#2a8fd6" stroke-width="4"><circle cx="26" cy="222" r="8"/><circle cx="54" cy="228" r="5.5"/></g>`,
     ),
   },
   {
@@ -1126,7 +1138,7 @@ function memeLayout({ id, name, desc, cols, rows, W, H, head, foot, pad, gap, ca
 export const layouts = [
   memeLayout({ id: 'grid9', name: '九宫格表情包', desc: '9 张连拍全上 · 每张配一句热梗', cols: 3, rows: 3, W: 1200, H: 1800, head: 200, foot: 150, pad: 60, gap: 30, capH: 96, rowGap: 44 }),
   memeLayout({ id: 'grid4', name: '四宫格大字报', desc: '从 9 张里挑 4 张 · 配字更大', cols: 2, rows: 2, W: 1200, H: 1800, head: 200, foot: 150, pad: 70, gap: 40, capH: 130, rowGap: 50 }),
-  memeLayout({ id: 'single', name: '单张表情包', desc: '挑最抽象的 1 张 · 超大配字', cols: 1, rows: 1, W: 1200, H: 1440, head: 150, foot: 130, pad: 110, gap: 0, capH: 150, rowGap: 0 }),
+  memeLayout({ id: 'single', name: '单张表情包', desc: '挑最抽象的 1 张 · 超大配字', cols: 1, rows: 1, W: 1200, H: 1500, head: 140, foot: 130, pad: 130, gap: 0, capH: 220, rowGap: 0 }),
 ];
 
 // ----------------------------------------------------------------- frames
@@ -1243,7 +1255,7 @@ const candy = {
         ctx.lineWidth = 4 * u;
         ctx.strokeStyle = PLUM;
         ctx.stroke();
-        gemFrame(ctx, s.x - m / 2, s.y - m / 2, s.w + m, s.h + m, 4.4 * Math.min(u, 2), 24 * Math.min(u, 2), Math.round(s.x + s.y));
+        gemFrame(ctx, s.x - m / 2, s.y - m / 2, s.w + m, s.h + m, 5.2 * Math.min(u, 2), 25 * Math.min(u, 2), Math.round(s.x + s.y));
       }
     },
     slot(ctx, s, i, info) {
@@ -1344,6 +1356,32 @@ function tvSet(ctx, s, n) {
   ctx.beginPath();
   ctx.ellipse(ax, y + k, 17 * k, 10 * k, 0, Math.PI, TAU);
   ctx.fill();
+  // a low wooden TV cabinet when the caption band leaves room for one
+  const floor = y + h + 9 * k;
+  const room = s.y + s.h + s.capH - floor;
+  if (room > 30 * k) {
+    const sh = Math.min(room - 6 * k, 64 * k);
+    rrect(ctx, x - 34 * k, floor, w + 68 * k, sh, 8 * k);
+    ctx.fillStyle = '#7a4f31';
+    ctx.fill();
+    ctx.lineWidth = 4 * k;
+    ctx.strokeStyle = INK;
+    ctx.stroke();
+    ctx.fillStyle = '#b98657';
+    ctx.fillRect(x - 32 * k, floor + 2 * k, w + 64 * k, 12 * k);
+    const front = sh - 14 * k;
+    const dh = front * 0.56;
+    const dy = floor + 14 * k + (front - dh) / 2;
+    for (const dx of [0.3, 0.7]) {
+      rrect(ctx, x + w * dx - 70 * k, dy, 140 * k, dh, 5 * k);
+      ctx.fillStyle = '#5c3a22';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x + w * dx, dy + dh / 2, Math.min(5 * k, dh * 0.3), 0, TAU);
+      ctx.fillStyle = '#e8c170';
+      ctx.fill();
+    }
+  }
   // feet
   ctx.fillStyle = INK;
   for (const fx of [x + w * 0.14, x + w * 0.86 - 18 * k]) {
@@ -1527,6 +1565,7 @@ const pixel = {
         const x = Math.round((r() * L.W) / p) * p;
         const y = Math.round((r() * L.H) / p) * p;
         const c = cols[i % cols.length];
+        if (y < L.head.h && Math.abs(x - L.W / 2) < L.W * 0.34) continue; // keep the title clear
         if (i % 5 === 0) pxDraw(ctx, PX_STAR, x, y, p, { W: c });
         else {
           ctx.fillStyle = c;
@@ -1546,22 +1585,25 @@ const pixel = {
       const q = Math.max(3, Math.round(5 * Math.min(unit(s), 2)));
       ctx.fillStyle = '#0b0b0b';
       for (const [x, y] of [[s.x, s.y], [s.x + s.w - q, s.y], [s.x, s.y + s.h - q], [s.x + s.w - q, s.y + s.h - q]]) ctx.fillRect(x, y, q, q);
-      // RPG dialog box
-      const by = s.y + s.h + q * 5;
-      const bh = s.capH - q * 5;
-      pxRect(ctx, s.x - q, by, s.w + q * 2, bh, q, '#ffffff', 2);
-      pxRect(ctx, s.x, by + q, s.w, bh - q * 2, q, '#0b0b0b', 1);
-      pixelText(ctx, captionFor(info), { x: s.x + q * 3, y: by + q * 2, w: s.w - q * 7, h: bh - q * 4 }, { color: '#ffffff', shadow: '#5a4bd6' });
-      pxDraw(ctx, ['WWW', '.W.'], s.x + s.w - q * 5, by + bh - q * 4, q, { W: '#ffd400' });
       // player tag
-      pxRect(ctx, s.x + q * 2, s.y + q * 2, q * 13, q * 6, q, '#0b0b0b', 1);
-      pixelText(ctx, `P${i + 1}`, { x: s.x + q * 3, y: s.y + q * 3, w: q * 11, h: q * 4 }, { color: '#ffd400', family: PIXEL, weight: 400, maxScale: Math.max(1, Math.round(q / 3)) });
+      pxRect(ctx, s.x + q * 2, s.y + q * 2, q * 12, q * 7, q, '#0b0b0b', 1);
+      pixelText(ctx, `${i + 1}P`, { x: s.x + q * 3, y: s.y + q * 3, w: q * 10, h: q * 5 }, { color: '#ffd400', family: PIXEL, threshold: 120, maxScale: Math.max(1, Math.round(q / 4)) });
+      // RPG dialog box over the bottom of the scene
+      const cap = captionFor(info);
+      if (!cap.trim()) return;
+      const top = Math.round(s.y + s.h - s.h * 0.08);
+      const bh = Math.round(s.y + s.h + s.capH - q * 2 - top);
+      pxRect(ctx, s.x + q, top, s.w - q * 2, bh, q, '#ffffff', 2);
+      pxRect(ctx, s.x + q * 2, top + q, s.w - q * 4, bh - q * 2, q, '#0b0b0b', 1);
+      const bold = unit(s) > 1.2; // big photos: hairline strokes look sparse when blown up
+      pixelText(ctx, cap, { x: s.x + q * 4, y: top + q * 2, w: s.w - q * 8, h: bh - q * 4 }, { color: '#ffffff', weight: bold ? 700 : 400, threshold: bold ? 140 : 90 });
+      pxDraw(ctx, ['WWW', '.W.'], s.x + s.w - q * 7, top + bh - q * 4, q, { W: '#ffd400' });
     },
     over(ctx, L, info) {
       const k = L.W / 1200;
       const hh = L.head.h;
       const p = Math.round(6 * k);
-      pixelText(ctx, '抽象表情包机', { x: L.W * 0.15, y: hh * 0.1, w: L.W * 0.7, h: hh * 0.56 }, { color: '#ffd400', shadow: '#ff3d7f', weight: 900 });
+      pixelText(ctx, '抽象表情包机', { x: L.W * 0.15, y: hh * 0.1, w: L.W * 0.7, h: hh * 0.56 }, { color: '#ffd400', shadow: '#ff3d7f', weight: 700, threshold: 140 });
       ctx.fillStyle = '#7ff3ff';
       ctx.font = `400 ${Math.round(20 * k)}px ${PIXEL}`;
       ctx.textAlign = 'center';
@@ -1580,8 +1622,8 @@ const pixel = {
       ctx.font = `400 ${Math.round(22 * k)}px ${PIXEL}`;
       ctx.fillText(`${dateText(info)}  ${serialText(info)}`, L.W / 2, f.y + f.h * 0.4);
       ctx.fillStyle = '#ffd400';
-      ctx.font = `400 ${Math.round(18 * k)}px ${PIXEL}`;
-      ctx.fillText('PRESS START TO 抽象', L.W / 2, f.y + f.h * 0.7);
+      ctx.font = `400 ${Math.round(24 * k)}px ${PIXEL}`;
+      ctx.fillText('- PRESS START -', L.W / 2, f.y + f.h * 0.72);
     },
   },
 };
@@ -1626,7 +1668,7 @@ const plain = {
       ctx.stroke();
       memeText(ctx, captionFor(info), { x: s.x - 4 * u, y: s.y + s.h + 8 * u, w: s.w + 8 * u, h: s.capH - 12 * u }, { fill: INK, maxFs: s.w * 0.15, valign: 'middle' });
       // the "@" watermark every reposted meme picks up
-      const fs = Math.max(11, 12 * u);
+      const fs = Math.max(17, 13 * u);
       ctx.save();
       ctx.font = `700 ${fs}px ${HEAVY}`;
       ctx.textAlign = 'right';
@@ -1690,15 +1732,22 @@ const warning = {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(`状态 ${String(i + 1).padStart(2, '0')}`, s.x - 4 * u + tw / 2, s.y - 4 * u + th / 2 + u);
-      // caption plate
+      // caption plate: ⚠ + words, centred together
       const by = s.y + s.h + 12 * u;
       const bh = s.capH - 16 * u;
       rrect(ctx, s.x - 4 * u, by, s.w + 8 * u, bh, 12 * u);
       ctx.fillStyle = INK;
       ctx.fill();
-      const ic = bh * 0.62;
-      warnSign(ctx, s.x + 8 * u + ic / 2, by + bh / 2, ic);
-      memeText(ctx, captionFor(info), { x: s.x + 14 * u + ic, y: by + 5 * u, w: s.w - 24 * u - ic, h: bh - 10 * u }, { fill: '#ffd400', maxFs: s.w * 0.14, valign: 'middle' });
+      const ic = Math.min(bh * 0.62, 64 * u);
+      const gap = 10 * u;
+      const area = { x: s.x + 12 * u + ic + gap, y: by + 5 * u, w: s.w - 24 * u - ic - gap, h: bh - 10 * u };
+      const st = { fill: '#ffd400', maxFs: s.w * 0.14, valign: 'middle' };
+      const cap = captionFor(info);
+      const m = memeText(ctx, cap, area, { ...st, dry: true });
+      const gw = ic + gap + (m ? m.width : -gap);
+      const gx = s.x + (s.w - gw) / 2;
+      warnSign(ctx, gx + ic / 2, by + bh / 2, ic);
+      if (m) memeText(ctx, cap, { ...area, x: gx + ic + gap + m.width / 2 - area.w / 2 }, st);
     },
     over(ctx, L, info) {
       const k = L.W / 1200;
@@ -1725,4 +1774,4 @@ const warning = {
 export const frames = [candy, tv, pixel, plain, warning];
 
 /** Every CJK string the frames draw on canvas (for fonts.text). */
-export const FRAME_TEXT = '抽象表情包机不求好看只求好玩正在播出抽象频道全天候播出表情包专用可以随便发精神状态提示状态本机检测结果仅供娱乐@打工人工作证';
+export const FRAME_TEXT = '抽象表情包机不求好看只求好玩正在播出抽象频道全天候播出表情包专用可以随便发精神状态提示本机检测结果仅供娱乐打工人工作证@·';

@@ -1,1 +1,354 @@
-/* Machine shell touches for .theme-ccd (filled in with the theme pack). */
+/* Machine shell for .theme-ccd (DIGI 2003): a silver plastic 2003 digicam
+   — glossy bevels, a round lens with a blue ring, a fresnel flash window,
+   and an LCD screen with status icons. Lobby cabinet: .m-ccd. */
+
+/* ---------------------------------------------------------------- room + shell */
+
+.theme-ccd.booth {
+  background:
+    radial-gradient(circle, rgba(255, 190, 240, 0.5) 1px, transparent 2px) 0 0 / 46px 46px,
+    radial-gradient(circle, rgba(160, 210, 255, 0.35) 1px, transparent 2px) 23px 23px / 46px 46px,
+    radial-gradient(ellipse at 50% 0%, #4b3a8f, transparent 60%),
+    linear-gradient(#211c4a, #120f2a);
+}
+
+.theme-ccd .marquee {
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.18) 0 1px, rgba(0, 0, 0, 0.03) 1px 3px),
+    linear-gradient(#fbfcfe, #c5ccd6 55%, #e9edf2);
+  border-color: #8c96a3;
+  box-shadow: 0 0 26px rgba(127, 178, 255, 0.45), inset 0 2px 0 #fff, inset 0 -3px 0 rgba(0, 0, 0, 0.12);
+}
+
+.theme-ccd .marquee h1 {
+  color: #2f6bff;
+  font-size: clamp(14px, 2.4vw, 28px);
+  white-space: nowrap;
+  text-shadow: 0 2px 0 #fff, 0 0 12px rgba(47, 107, 255, 0.35);
+}
+
+.theme-ccd .marquee small {
+  color: #3b4452;
+}
+
+.theme-ccd .bulbs i {
+  width: 5px;
+  height: 5px;
+  background: #bfe3ff;
+  box-shadow: 0 0 6px #2f6bff;
+}
+
+.theme-ccd .cabinet {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0) 16%, rgba(255, 255, 255, 0) 84%, rgba(0, 0, 0, 0.14)),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.35), transparent 7%, transparent 93%, rgba(0, 0, 0, 0.2)),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.07) 0 2px, rgba(0, 0, 0, 0.025) 2px 4px),
+    var(--body);
+  border-color: #f4f7fa;
+  border-radius: 34px;
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.55),
+    inset 0 3px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -4px 0 rgba(60, 70, 85, 0.25),
+    inset 0 0 0 1px rgba(90, 100, 115, 0.35);
+}
+
+/* round lens barrel with the blue ring, orange AF / self-timer lamp */
+.theme-ccd .lens {
+  width: 58px;
+  height: 58px;
+  background: radial-gradient(circle at 50% 50%, #243052 0 22%, #090c15 23% 42%, #2f6bff 43% 51%, #1c2a55 52% 55%, #eef1f5 56% 68%, #97a1ae 69% 74%, #f6f8fa 75%);
+  box-shadow: 0 0 0 3px #aab3bf, 0 5px 12px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+
+.theme-ccd .lens .glass {
+  inset: 15px 25px 29px 16px;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.theme-ccd .led {
+  right: -20px;
+  top: 6px;
+  background: #6b3510;
+  border-color: #3a2008;
+}
+
+.theme-ccd .led[data-state="on"] {
+  background: #ff8f1f;
+  box-shadow: 0 0 10px #ff8f1f;
+}
+
+.theme-ccd .led[data-state="blink"] {
+  background: #ff8f1f;
+  box-shadow: 0 0 12px #ff8f1f;
+  animation: ccd-lamp 0.3s steps(1) infinite;
+}
+
+@keyframes ccd-lamp {
+  50% {
+    background: #6b3510;
+    box-shadow: none;
+  }
+}
+
+.theme-ccd .plate {
+  padding: 5px 14px;
+  background: linear-gradient(#ffffff, #cfd6df);
+  color: #1f47b8;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  border: 1px solid #9aa4b1;
+}
+
+/* coin + print slots labelled like the camera's LCD */
+.theme-ccd .coinslot,
+.theme-ccd .printslot {
+  font-family: "VT323", "ZCOOL KuaiLe", monospace;
+  font-size: 17px;
+  letter-spacing: 0.06em;
+  color: #1f2a44;
+}
+
+/* the flash: a small fresnel window instead of tall light panels */
+.theme-ccd .flashpanel {
+  align-self: start;
+  height: 34%;
+  margin-top: 54px;
+  border: 3px solid #f4f7fa;
+  border-radius: 12px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.4) 0 2px, rgba(255, 255, 255, 0) 2px 6px),
+    radial-gradient(ellipse at 50% 45%, rgba(255, 251, 238, 0.95), rgba(214, 223, 236, 0.85) 60%, rgba(150, 160, 176, 0.95));
+  box-shadow: 0 0 0 4px #9aa4b1, 0 6px 14px rgba(0, 0, 0, 0.35), inset 0 0 14px rgba(0, 0, 0, 0.22);
+}
+
+/* ---------------------------------------------------------------- LCD screen */
+
+.theme-ccd .bezel {
+  padding: 12px;
+  border-radius: 22px;
+  background: linear-gradient(#3a414d, #1b1f27);
+  box-shadow: inset 0 0 0 2px #0c0e12, inset 0 2px 0 rgba(255, 255, 255, 0.18), 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.theme-ccd .screen-wrap {
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(120, 255, 210, 0.07), transparent 70%),
+    var(--screen);
+}
+
+.theme-ccd .screen-wrap::after {
+  background:
+    linear-gradient(115deg, rgba(255, 255, 255, 0.07), transparent 32%),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.1) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.06) 0 1px, transparent 1px 3px);
+}
+
+/* status bar: signal + resolution on the left, battery on the right */
+.theme-ccd .screen-head {
+  position: relative;
+  padding-top: 26px;
+  background: linear-gradient(rgba(216, 255, 233, 0.07), transparent);
+}
+
+.theme-ccd .screen-head::before {
+  content: "1280×960 · FINE";
+  position: absolute;
+  left: 14px;
+  top: 5px;
+  height: 14px;
+  padding-left: 34px;
+  color: var(--screenText);
+  font: 17px/14px "VT323", monospace;
+  letter-spacing: 0.08em;
+  opacity: 0.85;
+  background:
+    linear-gradient(currentColor, currentColor) 0 100% / 4px 4px no-repeat,
+    linear-gradient(currentColor, currentColor) 6px 100% / 4px 7px no-repeat,
+    linear-gradient(currentColor, currentColor) 12px 100% / 4px 10px no-repeat,
+    linear-gradient(currentColor, currentColor) 18px 100% / 4px 14px no-repeat;
+}
+
+.theme-ccd .screen-head::after {
+  content: "";
+  position: absolute;
+  right: 16px;
+  top: 5px;
+  width: 30px;
+  height: 14px;
+  opacity: 0.85;
+  background:
+    linear-gradient(var(--screenText), var(--screenText)) 27px 4px / 3px 6px no-repeat,
+    linear-gradient(var(--screenText), var(--screenText)) 4px 4px / 5px 6px no-repeat,
+    linear-gradient(var(--screenText), var(--screenText)) 11px 4px / 5px 6px no-repeat,
+    linear-gradient(var(--screenText), var(--screenText)) 18px 4px / 5px 6px no-repeat,
+    linear-gradient(var(--screen), var(--screen)) 2px 2px / 23px 10px no-repeat,
+    linear-gradient(var(--screenText), var(--screenText)) 0 0 / 27px 14px no-repeat;
+}
+
+.theme-ccd .screen-title b {
+  font-family: "ZCOOL QingKe HuangYou", "ZCOOL KuaiLe", sans-serif;
+  font-size: 26px;
+  letter-spacing: 0.04em;
+}
+
+.theme-ccd .screen-title small {
+  font-family: "VT323", monospace;
+  font-size: 17px;
+  letter-spacing: 0.14em;
+}
+
+.theme-ccd .steps li {
+  border-radius: 4px;
+}
+
+.theme-ccd .timer b {
+  font-family: "VT323", monospace;
+  font-size: 30px;
+  margin-top: 9px;
+}
+
+.theme-ccd .kicker {
+  color: #7fb2ff;
+}
+
+.theme-ccd .attract-title {
+  font-size: clamp(28px, 4vw, 52px);
+  line-height: 1.15;
+  text-shadow: 4px 4px 0 #2f6bff, 0 0 18px rgba(127, 178, 255, 0.6);
+}
+
+.theme-ccd .screen .btn.primary {
+  background: linear-gradient(#6f9bff, #2f6bff 55%, #1f47b8);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* ---------------------------------------------------------------- viewfinder skin */
+
+/* corner brackets + a dashed 45° "look up at the lens" guide over the live view */
+.theme-ccd .live::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.85;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' opacity='.8'%3E%3Cpath d='M6 94 L90 10' stroke-dasharray='5 5'/%3E%3Cpath d='M6 94 H40'/%3E%3Cpath d='M30 94 A24 24 0 0 0 23 77'/%3E%3Cpath d='M90 10 L78 11 M90 10 L89 22'/%3E%3Cpath d='M34 74 V80 H40 M39 74 V85 M46 74 H42 V79 H46 V85 H42'/%3E%3Ccircle cx='50' cy='75' r='1.6'/%3E%3C/g%3E%3C/svg%3E") right 7% top 22% / 30% auto no-repeat,
+    linear-gradient(#fff, #fff) 14px 14px / 36px 3px no-repeat,
+    linear-gradient(#fff, #fff) 14px 14px / 3px 36px no-repeat,
+    linear-gradient(#fff, #fff) right 14px top 14px / 36px 3px no-repeat,
+    linear-gradient(#fff, #fff) right 14px top 14px / 3px 36px no-repeat,
+    linear-gradient(#fff, #fff) left 14px bottom 14px / 36px 3px no-repeat,
+    linear-gradient(#fff, #fff) left 14px bottom 14px / 3px 36px no-repeat,
+    linear-gradient(#fff, #fff) right 14px bottom 14px / 36px 3px no-repeat,
+    linear-gradient(#fff, #fff) right 14px bottom 14px / 3px 36px no-repeat;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
+}
+
+.theme-ccd .live {
+  border-radius: 10px;
+  box-shadow: 0 0 0 5px #1b1f27, 0 0 0 8px #c7ced8, 0 0 0 9px #8c96a3;
+}
+
+.theme-ccd .live-guide {
+  border-color: rgba(191, 227, 255, 0.35);
+}
+
+.theme-ccd .pose {
+  top: 40px;
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: center;
+  align-items: center;
+  column-gap: 8px;
+  max-width: 88%;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 4px 0 rgba(31, 71, 184, 0.45);
+}
+
+/* the hint goes on its own line instead of being squeezed beside the pose */
+.theme-ccd .pose small {
+  grid-column: 1 / -1;
+  text-align: center;
+  font-size: 13px;
+}
+
+.theme-ccd .count {
+  font-family: "VT323", monospace;
+  font-size: min(44vh, 330px);
+  color: #ff9a2e;
+  text-shadow: 0 0 24px rgba(255, 110, 0, 0.8), 0 6px 0 rgba(0, 0, 0, 0.35);
+}
+
+.theme-ccd .shot-no {
+  font-family: "VT323", monospace;
+  font-size: 20px;
+  border-radius: 4px;
+}
+
+/* ---------------------------------------------------------------- print-out slot */
+
+.theme-ccd .out-machine {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 30%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.3), transparent 12%, transparent 88%, rgba(0, 0, 0, 0.2)),
+    var(--body);
+}
+
+.theme-ccd .out-label {
+  color: #2f6bff;
+  font-size: 22px;
+  text-shadow: 0 2px 0 #fff;
+}
+
+.theme-ccd .out-label small {
+  color: #3b4452;
+}
+
+/* ---------------------------------------------------------------- lobby cabinet */
+
+.m-ccd .c-marquee {
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0 1px, rgba(0, 0, 0, 0.03) 1px 3px),
+    linear-gradient(#fbfcfe, #c5ccd6 60%, #e9edf2);
+}
+
+.m-ccd .c-marquee b {
+  color: #2f6bff;
+  font-size: 17px;
+  line-height: 1.5;
+  text-shadow: 0 1px 0 #fff;
+}
+
+.m-ccd .c-bulbs i {
+  width: 5px;
+  height: 5px;
+  background: #bfe3ff;
+  box-shadow: 0 0 5px #2f6bff;
+}
+
+.m-ccd .c-body {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.4), transparent 10%, transparent 90%, rgba(0, 0, 0, 0.16)),
+    linear-gradient(180deg, #f1f4f8, #b4bdc8);
+}
+
+.m-ccd .c-screen {
+  left: 10%;
+  right: 10%;
+  border-radius: 3px;
+  background: #0e2a2c;
+  color: #ffb35c;
+  font-family: "VT323", monospace;
+  font-size: 15px;
+  white-space: nowrap;
+  border: 2px solid #9aa4b1;
+  box-shadow: 0 0 12px rgba(127, 178, 255, 0.6), inset 0 0 8px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 0 4px rgba(255, 120, 0, 0.8);
+}
+
+.m-ccd .c-base {
+  background: linear-gradient(#c9d0d9, #8f99a6);
+  color: #1b2a55;
+}

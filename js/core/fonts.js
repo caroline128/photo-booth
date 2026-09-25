@@ -15,7 +15,7 @@ export async function ensureFonts(families = [], text = '') {
   const todo = families.filter((f) => !loaded.has(key(f)));
   if (!todo.length) return;
   const jobs = todo.map((f) =>
-    Promise.all([document.fonts.load(`400 48px "${f}"`, sample), document.fonts.load(`700 48px "${f}"`, sample)])
+    Promise.all([400, 700, 900].map((w) => document.fonts.load(`${w} 48px "${f}"`, sample)))
       .then(() => loaded.add(key(f)))
       .catch(() => {}),
   );

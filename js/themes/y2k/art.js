@@ -15,7 +15,7 @@ const PURPLE = '#a259ff';
 const SKY = '#8fd8ff';
 const LEMON = '#fff27a';
 const INK = '#1a1320';
-const HOLO = ['#ffb3e6', '#d9bcff', '#aee6ff', '#bfffe3', '#fff6ad', '#ffb3e6'];
+const HOLO = ['#ff9ad8', '#d7a8ff', '#8fd8ff', '#b8ffe0', '#fff29a', '#ff9ad8'];
 
 export const FONT = {
   pop: '"Mochiy Pop One", "ZCOOL KuaiLe", sans-serif',
@@ -253,7 +253,24 @@ function mini(ctx, kind, x, y, r, color, rot = 0) {
 
 // ----------------------------------------------------------------- patterns
 
-/** Leopard rosettes (broken dark rings around a tinted core) on a jittered grid. */
+/** One tapered blob along an ellipse arc (a piece of a leopard rosette). */
+function crescent(ctx, rx, ry, a0, a1, w) {
+  const n = 12;
+  const pts = [];
+  for (let i = 0; i <= n; i++) {
+    const u = i / n;
+    const a = a0 + (a1 - a0) * u;
+    const t = w * Math.pow(Math.sin(Math.PI * u), 0.45);
+    pts.push([Math.cos(a), Math.sin(a), t]);
+  }
+  ctx.beginPath();
+  for (const [c, s, t] of pts) ctx.lineTo(c * (rx + t * 0.55), s * (ry + t * 0.55));
+  for (let i = n; i >= 0; i--) ctx.lineTo(pts[i][0] * (rx - pts[i][2] * 0.45), pts[i][1] * (ry - pts[i][2] * 0.45));
+  ctx.closePath();
+  ctx.fill();
+}
+
+/** Leopard print: broken rings of tapered blobs around a tinted core, plus loose spots. */
 function leopard(ctx, W, H, { base, ring, core, cell = 90, seed = 1, wrap = false }) {
   ctx.fillStyle = base;
   ctx.fillRect(0, 0, W, H);
@@ -264,75 +281,103 @@ function leopard(ctx, W, H, { base, ring, core, cell = 90, seed = 1, wrap = fals
   for (let j = 0; j < rows; j++) {
     for (let i = 0; i < cols; i++) {
       spots.push({
-        x: (i + (j % 2) * 0.5) * cell + (r() - 0.5) * cell * 0.36,
-        y: (j + 0.5) * cell * 0.8 + (r() - 0.5) * cell * 0.3,
-        s: cell * (0.2 + r() * 0.1),
+        x: (i + (j % 2) * 0.5) * cell + (r() - 0.5) * cell * 0.3,
+        y: (j + 0.5) * cell * 0.8 + (r() - 0.5) * cell * 0.26,
+        s: cell * (0.21 + r() * 0.1),
+        e: 0.7 + r() * 0.22,
         rot: r() * TAU,
-        n: 3 + Math.floor(r() * 3),
         a0: r() * TAU,
-        q: [r(), r(), r(), r(), r()],
-        dot: [r(), r(), r()],
+        blobs: Array.from({ length: 2 + Math.floor(r() * 3) }, () => [r(), r(), r()]),
+        dots: Array.from({ length: 1 + Math.floor(r() * 2) }, () => [r(), r(), r()]),
       });
     }
   }
   const offs = wrap ? [-1, 0, 1] : [0];
-  ctx.lineCap = 'round';
   for (const sp of spots) {
     for (const ox of offs) {
       for (const oy of offs) {
         ctx.save();
         ctx.translate(sp.x + ox * W, sp.y + oy * H);
         ctx.rotate(sp.rot);
+        const rx = sp.s;
+        const ry = sp.s * sp.e;
         ctx.fillStyle = core;
         ctx.beginPath();
-        ctx.ellipse(0, 0, sp.s * 0.8, sp.s * 0.62, 0, 0, TAU);
+        ctx.ellipse(0, 0, rx * 0.88, ry * 0.86, 0, 0, TAU);
         ctx.fill();
-        ctx.strokeStyle = ring;
-        for (let k = 0; k < sp.n; k++) {
-          const a = sp.a0 + (k / sp.n) * TAU;
-          ctx.lineWidth = sp.s * (0.24 + sp.q[k] * 0.2);
-          ctx.beginPath();
-          ctx.ellipse(0, 0, sp.s, sp.s * 0.8, 0, a, a + (TAU / sp.n) * (0.45 + sp.q[k] * 0.3));
-          ctx.stroke();
-        }
-        // a loose little spot next to the rosette
         ctx.fillStyle = ring;
-        ctx.beginPath();
-        ctx.ellipse(sp.s * (1.5 + sp.dot[0] * 0.4), sp.s * (sp.dot[1] - 0.5), sp.s * 0.2, sp.s * 0.14, sp.dot[2] * 3, 0, TAU);
-        ctx.fill();
+        let a = sp.a0;
+        for (const [q1, q2, q3] of sp.blobs) {
+          const len = (TAU / sp.blobs.length) * (0.5 + q1 * 0.32);
+          crescent(ctx, rx, ry, a, a + len, sp.s * (0.26 + q2 * 0.24));
+          a += TAU / sp.blobs.length + (q3 - 0.5) * 0.3;
+        }
+        for (const [d1, d2, d3] of sp.dots) {
+          const dd = sp.s * (1.45 + d1 * 0.5);
+          ctx.beginPath();
+          ctx.ellipse(dd * Math.cos(d2 * TAU), dd * Math.sin(d2 * TAU), sp.s * (0.12 + d3 * 0.12), sp.s * (0.09 + d3 * 0.08), d2 * 5, 0, TAU);
+          ctx.fill();
+        }
         ctx.restore();
       }
     }
   }
 }
 
-/** Wavy zebra stripes that pinch and taper. */
+/** Zebra print: near-parallel wavy stripes that drift, pinch and fork (never cross). */
 function zebra(ctx, W, H, { base, ink, band = 80, seed = 1, tilt = 0.4 }) {
   ctx.fillStyle = base;
   ctx.fillRect(0, 0, W, H);
   const r = rng(seed);
   ctx.fillStyle = ink;
-  const step = Math.max(6, W / 120);
-  for (let y0 = -W * tilt - band; y0 < H + band; y0 += band * (0.9 + r() * 0.3)) {
-    const amp = band * (0.18 + r() * 0.3);
-    const f1 = (TAU / W) * (0.7 + r() * 1.1);
-    const f2 = (TAU / W) * (2 + r() * 2.5);
-    const f3 = (TAU / W) * (0.9 + r() * 1.4);
-    const [p1, p2, p3] = [r() * TAU, r() * TAU, r() * TAU];
-    const thick = band * (0.34 + r() * 0.16);
-    const top = [];
-    const bot = [];
-    for (let x = -step; x <= W + step; x += step) {
-      const yc = y0 + x * tilt + Math.sin(x * f1 + p1) * amp + Math.sin(x * f2 + p2) * amp * 0.25;
-      const t = thick * (0.08 + 0.92 * Math.pow(Math.abs(Math.sin(x * f3 + p3)), 0.55));
-      top.push([x, yc - t / 2]);
-      bot.push([x, yc + t / 2]);
-    }
+  const step = Math.max(6, W / 140);
+  const f1 = TAU / (W * 0.9);
+  const f2 = TAU / (W * 0.33);
+  let p1 = r() * TAU;
+  let p2 = r() * TAU;
+  let amp = band * 0.6;
+  const count = Math.ceil((H + W * Math.abs(tilt)) / band) + 4;
+  for (let k = -2; k < count; k++) {
+    // each stripe is a slightly drifted copy of the previous one
+    p1 += (r() - 0.5) * 0.24;
+    p2 += (r() - 0.5) * 0.5;
+    amp = Math.min(band * 0.85, Math.max(band * 0.3, amp + (r() - 0.5) * band * 0.12));
+    const y0 = k * band - W * Math.max(0, tilt);
+    const thick = band * (0.42 + r() * 0.12);
+    const pf = TAU / (W * (0.25 + r() * 0.45));
+    const pp = r() * TAU;
+    const depth = r() < 0.55 ? 0.95 : 0.45;
+    const [a1, a2] = [p1, p2];
+    const A = amp;
+    const mid = (x) => y0 + x * tilt + Math.sin(x * f1 + a1) * A + Math.sin(x * f2 + a2) * A * 0.28;
+    const th = (x) => thick * (1 - depth * Math.pow(Math.max(0, Math.sin(x * pf + pp)), 4));
+    const xs = [];
+    for (let x = -step; x <= W + step; x += step) xs.push(x);
     ctx.beginPath();
-    for (const [x, y] of top) ctx.lineTo(x, y);
-    for (let i = bot.length - 1; i >= 0; i--) ctx.lineTo(bot[i][0], bot[i][1]);
+    for (const x of xs) ctx.lineTo(x, mid(x) - th(x) / 2);
+    for (let i = xs.length - 1; i >= 0; i--) ctx.lineTo(xs[i], mid(xs[i]) + th(xs[i]) / 2);
     ctx.closePath();
     ctx.fill();
+    if (r() < 0.6) {
+      // a thin tapered branch peeling off into the gap
+      const fx = r() * W;
+      const len = band * (1.2 + r() * 1.4);
+      const dir = r() < 0.5 ? -1 : 1;
+      const side = r() < 0.5 ? -1 : 1;
+      const w0 = thick * (0.3 + r() * 0.2);
+      const us = Array.from({ length: 13 }, (_, i) => i / 12);
+      // the root starts hidden inside the stripe, then the branch curls out and tapers
+      const cy = (u) => {
+        const x = fx + dir * len * u;
+        return mid(x) + side * (th(x) / 2 - w0 * 0.6 + (band * 0.3 + w0 * 0.6) * Math.pow(u, 1.5));
+      };
+      const hw = (u) => (w0 / 2) * Math.pow(1 - u, 0.8);
+      ctx.beginPath();
+      for (const u of us) ctx.lineTo(fx + dir * len * u, cy(u) - hw(u));
+      for (let i = us.length - 1; i >= 0; i--) ctx.lineTo(fx + dir * len * us[i], cy(us[i]) + hw(us[i]));
+      ctx.closePath();
+      ctx.fill();
+    }
   }
 }
 
@@ -345,8 +390,8 @@ function gingham(ctx, W, H, { base, band, size }) {
 }
 
 /** Pastel holographic foil: iridescent gradient + soft diagonal light bands. */
-function holoFoil(ctx, W, H, { shift = 0, seed = 5 } = {}) {
-  ctx.fillStyle = fillGrad(ctx, ['#ffc6ec', '#e3c8ff', '#bfe9ff', '#c9ffe9', '#fff5c2', '#ffc6ec'], -W * shift, 0, W * (1 - shift) + W, H);
+function holoFoil(ctx, W, H, { seed = 5 } = {}) {
+  ctx.fillStyle = fillGrad(ctx, ['#ffc6ec', '#e3c8ff', '#bfe9ff', '#c9ffe9', '#fff5c2', '#ffc6ec'], 0, 0, W, H);
   ctx.fillRect(0, 0, W, H);
   const r = rng(seed);
   ctx.save();
@@ -459,13 +504,13 @@ function cached(key, w, h, draw) {
     c = mkCanvas(w, h);
     draw(c.getContext('2d'), c.width, c.height);
     tiles.set(k, c);
-    if (tiles.size > 16) tiles.delete(tiles.keys().next().value);
+    if (tiles.size > 10) tiles.delete(tiles.keys().next().value);
   }
   return c;
 }
 
 const leopardTile = () =>
-  cached('leo-tile', 180, 192, (ctx, w, h) => leopard(ctx, w, h, { base: '#ffb3d9', ring: INK, core: '#ff6fb5', cell: 60, seed: 3, wrap: true }));
+  cached('leo-tile', 180, 192, (ctx, w, h) => leopard(ctx, w, h, { base: '#ffb3d9', ring: INK, core: '#ff7cc0', cell: 60, seed: 3, wrap: true }));
 
 // ----------------------------------------------------------------- props
 // anchor/w/origin: see js/engine/props.js (units = eye distance d)
@@ -518,21 +563,21 @@ export const props = [
     id: 'y2k-usagi',
     name: '兔耳朵',
     anchor: 'crown',
-    w: 2.3,
-    origin: [0.5, 0.9],
-    svg: svg(240, 280, `
-      <g transform="rotate(-13 88 246)">
-        <path d="M88 246 C62 208 54 128 60 66 C64 30 76 10 90 10 C104 10 114 30 116 66 C120 128 112 208 88 246 Z" fill="#fff" stroke="#f0c2d8" stroke-width="4"/>
-        <path d="M89 214 C75 182 71 124 75 76 C77 50 83 34 90 34 C97 34 102 50 104 76 C107 124 103 182 89 214 Z" fill="#ffb3d6"/>
+    w: 2.5,
+    origin: [0.5, 0.8],
+    svg: svg(240, 256, `
+      <g transform="rotate(-14 92 200)">
+        <path d="M92 204 C70 172 62 104 68 54 C72 26 82 10 94 10 C106 10 114 26 116 54 C120 104 112 172 92 204 Z" fill="#fff" stroke="#f0c2d8" stroke-width="4"/>
+        <path d="M93 178 C81 152 77 104 81 64 C83 42 88 30 94 30 C100 30 103 42 104 64 C107 104 103 152 93 178 Z" fill="#ffb3d6"/>
       </g>
-      <g transform="rotate(10 152 246)">
-        <path d="M152 246 C128 208 122 150 126 104 C128 92 136 84 152 84 C168 84 176 92 178 104 C182 150 176 208 152 246 Z" fill="#fff" stroke="#f0c2d8" stroke-width="4"/>
-        <path d="M152 214 C140 186 136 146 139 112 C141 102 146 98 152 98 C158 98 163 102 165 112 C168 146 164 186 152 214 Z" fill="#ffb3d6"/>
-        <path d="M130 100 C130 76 148 60 172 62 C196 64 208 82 200 94 C192 104 170 98 152 104 C142 107 131 108 130 100 Z" fill="#fff" stroke="#f0c2d8" stroke-width="4"/>
+      <g transform="rotate(10 150 200)">
+        <path d="M150 204 C128 172 122 124 126 88 C128 76 136 68 150 68 C164 68 172 76 174 88 C178 124 172 172 150 204 Z" fill="#fff" stroke="#f0c2d8" stroke-width="4"/>
+        <path d="M150 176 C140 152 137 120 139 96 C141 86 145 82 150 82 C155 82 159 86 161 96 C163 120 160 152 150 176 Z" fill="#ffb3d6"/>
+        <path d="M128 84 C128 60 146 44 170 46 C194 48 206 66 198 78 C190 88 168 82 150 88 C140 91 129 92 128 84 Z" fill="#fff" stroke="#f0c2d8" stroke-width="4"/>
       </g>
-      <path d="M16 270 C54 230 186 230 224 270" fill="none" stroke="#ff8cc6" stroke-width="14" stroke-linecap="round"/>
-      <path d="M40 252 C80 232 160 232 200 252" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7"/>
-      <g transform="translate(64 244) rotate(-20)">
+      <path d="M10 246 C32 204 78 190 120 190 C162 190 208 204 230 246" fill="none" stroke="#ff8cc6" stroke-width="14" stroke-linecap="round"/>
+      <path d="M28 228 C54 204 88 197 120 197 C152 197 186 204 212 228" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7"/>
+      <g transform="translate(66 204) rotate(-24)">
         <path d="M0 0 L-18 -12 L-18 12 Z M0 0 L18 -12 L18 12 Z" fill="${PINK}" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
         <circle r="6" fill="${PINK}" stroke="#fff" stroke-width="2.5"/>
       </g>`),
@@ -544,9 +589,9 @@ export const props = [
     pair: true,
     flipPair: true,
     w: 0.82,
-    dx: 0.78,
-    dy: -0.05,
-    rot: 0.35,
+    dx: 0.72,
+    dy: -0.42,
+    rot: 0.25,
     origin: [0.5, 0.5],
     svg: svg(128, 104, `
       <g transform="translate(4 2)">
@@ -578,19 +623,20 @@ export const props = [
     id: 'y2k-tiara',
     name: '公主皇冠',
     anchor: 'crown',
-    w: 1.75,
-    dy: 0.05,
-    origin: [0.5, 0.88],
-    svg: svg(220, 130, `
-      <path d="M14 120 C26 94 42 84 58 90 C64 70 76 58 92 62 C96 40 104 22 110 8 C116 22 124 40 128 62 C144 58 156 70 162 90 C178 84 194 94 206 120 C160 104 60 104 14 120 Z" fill="url(#s)" stroke="#9aa4c4" stroke-width="3" stroke-linejoin="round"/>
-      <path d="M40 106 C56 96 70 94 84 98 M136 98 C150 94 164 96 180 106" stroke="#fff" stroke-width="3" fill="none" opacity=".85"/>
-      <path d="${heartD(110, 68, 17)}" fill="${PINK}" stroke="#fff" stroke-width="3"/>
-      <path d="M103 60 Q107 55 113 56" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
-      <circle cx="74" cy="86" r="8" fill="${SKY}" stroke="#fff" stroke-width="2.5"/>
-      <circle cx="146" cy="86" r="8" fill="${LAV}" stroke="#fff" stroke-width="2.5"/>
-      <g fill="#fff" stroke="#c9cfe0" stroke-width="1.5"><circle cx="58" cy="88" r="5"/><circle cx="92" cy="62" r="5"/><circle cx="128" cy="62" r="5"/><circle cx="162" cy="88" r="5"/></g>
-      <path d="${sparkleD(110, 12, 14)}" fill="#fff" stroke="#c9cfe0" stroke-width="1"/>`,
-    lg('s', ['#ffffff', '#dfe4f3', '#b7bfd8'], [0, 0, 0, 1])),
+    w: 2.1,
+    dy: 0.06,
+    origin: [0.5, 0.86],
+    svg: svg(240, 140, `
+      <path d="M16 126 C24 100 40 90 60 96 C64 74 80 62 98 68 C100 44 110 24 120 10 C130 24 140 44 142 68 C160 62 176 74 180 96 C200 90 216 100 224 126 C176 110 64 110 16 126 Z" fill="url(#s)" stroke="#7d88b3" stroke-width="3.5" stroke-linejoin="round"/>
+      <path d="M40 114 C48 102 60 100 70 106 M170 106 C180 100 192 102 200 114 M84 100 C90 86 104 84 110 94 M130 94 C136 84 150 86 156 100" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".9"/>
+      <g><circle cx="40" cy="114.3" r="4" fill="#fff" stroke="#c9cfe0" stroke-width="1"/><circle cx="56" cy="111.3" r="4" fill="#ff7cc4" stroke="#c9cfe0" stroke-width="1"/><circle cx="72" cy="109.0" r="4" fill="#fff" stroke="#c9cfe0" stroke-width="1"/><circle cx="88" cy="107.3" r="4" fill="#ff7cc4" stroke="#c9cfe0" stroke-width="1"/><circle cx="104" cy="106.3" r="4" fill="#fff" stroke="#c9cfe0" stroke-width="1"/><circle cx="120" cy="106.0" r="4" fill="#ff7cc4" stroke="#c9cfe0" stroke-width="1"/><circle cx="136" cy="106.3" r="4" fill="#fff" stroke="#c9cfe0" stroke-width="1"/><circle cx="152" cy="107.3" r="4" fill="#ff7cc4" stroke="#c9cfe0" stroke-width="1"/><circle cx="168" cy="109.0" r="4" fill="#fff" stroke="#c9cfe0" stroke-width="1"/><circle cx="184" cy="111.3" r="4" fill="#ff7cc4" stroke="#c9cfe0" stroke-width="1"/><circle cx="200" cy="114.3" r="4" fill="#fff" stroke="#c9cfe0" stroke-width="1"/></g>
+      <path d="${heartD(120, 74, 21)}" fill="url(#p)" stroke="#fff" stroke-width="3.5"/>
+      <path d="M110 64 Q115 58 122 60" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+      <circle cx="80" cy="92" r="9" fill="${SKY}" stroke="#fff" stroke-width="3"/>
+      <circle cx="160" cy="92" r="9" fill="${LAV}" stroke="#fff" stroke-width="3"/>
+      <g fill="#fff" stroke="#b5bdd8" stroke-width="1.5"><circle cx="60" cy="94" r="6"/><circle cx="98" cy="66" r="6"/><circle cx="142" cy="66" r="6"/><circle cx="180" cy="94" r="6"/></g>
+      <path d="${sparkleD(120, 14, 15)}" fill="#fff" stroke="#b5bdd8" stroke-width="1.5"/>`,
+    lg('s', ['#ffffff', '#d3daee', '#98a3c8'], [0, 0, 0, 1]) + lg('p', ['#ffd1ea', PINK, '#d61f7a'], [0, 0, 0, 1])),
   },
   {
     id: 'y2k-ribbon',
@@ -617,7 +663,7 @@ export const props = [
     anchor: 'cheeks',
     pair: true,
     flipPair: true,
-    w: 0.95,
+    w: 1.05,
     dx: -0.12,
     dy: -0.28,
     origin: [0.45, 0.56],
@@ -649,9 +695,9 @@ export const props = [
     anchor: 'head',
     pair: true,
     flipPair: true,
-    w: 0.62,
+    w: 0.64,
     dx: 0.5,
-    dy: 0.02,
+    dy: -0.32,
     rot: 0.4,
     origin: [0.5, 0.5],
     svg: svg(120, 120, `
@@ -757,7 +803,6 @@ const hearts = (...pts) => (ctx, W, H, fs) => {
     ctx.fill();
   }
 };
-const both = (...fns) => (...a) => fns.forEach((f) => f(...a));
 
 function mbti(code, [c1, c2, ink]) {
   const css = `400 100px ${FONT.block}`;
@@ -813,13 +858,13 @@ function mbti(code, [c1, c2, ink]) {
 export const stickers = [
   // --- Heisei slang (FuRyu 2025: pink/purple/black neon + 平成 words)
   wordArt({ id: 'y2k-zuttomo', text: 'ズッ友', group: '平成语', fill: HOT, rings: [[INK, 0.34], ['#fff', 0.18]], size: 0.34, deco: sparkles([0.9, 0.2, 0.2], [0.08, 0.84, 0.13]) }),
-  wordArt({ id: 'y2k-nikoichi', text: 'ニコイチ', group: '平成语', fill: ['#e2c4ff', PURPLE], rings: [['#fff', 0.24]], glow: PURPLE, size: 0.38, outlineColor: '#e9dcff', deco: hearts([0.95, 0.24, 0.13, PINK]) }),
+  wordArt({ id: 'y2k-nikoichi', text: 'ニコイチ', group: '平成语', fill: ['#dcbcff', '#8a3dff'], rings: [['#4a1a8f', 0.3], ['#fff', 0.16]], size: 0.38, deco: hearts([0.95, 0.22, 0.13, PINK], [0.05, 0.8, 0.1, PURPLE]) }),
   wordArt({ id: 'y2k-shinyu', text: '心友', group: '平成语', fill: ['#ff9fd2', HOT], rings: [['#fff', 0.24]], size: 0.28, deco: hearts([0.9, 0.18, 0.18, PURPLE], [0.1, 0.86, 0.11, PINK]) }),
   wordArt({ id: 'y2k-isshou', text: '一生\n仲良し', group: '平成语', fill: ['#ff7cc4', PURPLE], rings: [[INK, 0.3], ['#fff', 0.16]], size: 0.32, lh: 1.14 }),
   wordArt({ id: 'y2k-moreta', text: '盛れた', group: '平成语', fill: ['#fff27a', '#ffb13d'], rings: [[HOT, 0.3], ['#fff', 0.16]], size: 0.32, deco: sparkles([0.93, 0.18, 0.22, '#fff'], [0.06, 0.2, 0.14, LEMON], [0.95, 0.85, 0.11, '#fff']) }),
   wordArt({ id: 'y2k-saikyou', text: '最強', font: FONT.bold, group: '平成语', fill: INK, rings: [[HOT, 0.32], ['#fff', 0.16]], size: 0.28, deco: sparkles([0.9, 0.16, 0.2, LEMON]) }),
   wordArt({ id: 'y2k-arigato', text: 'ありがと', group: '平成语', fill: ['#9ae2ff', '#3aa8ff'], rings: [['#fff', 0.24]], size: 0.36, deco: hearts([0.96, 0.3, 0.12, PINK], [0.04, 0.74, 0.1, '#ffb3dc']) }),
-  wordArt({ id: 'y2k-zutto', text: 'ずっといっしょ', group: '平成语', fill: HOT, rings: [['#fff', 0.24]], glow: '#ff8cc6', size: 0.46, outlineColor: '#ffe0f0' }),
+  wordArt({ id: 'y2k-zutto', text: 'ずっといっしょ', group: '平成语', fill: ['#ff9fd2', HOT], rings: [['#b0126a', 0.28], ['#fff', 0.15]], size: 0.46 }),
   // --- gyaru words
   wordArt({ id: 'y2k-gal', text: 'ギャル', font: FONT.bold, group: '辣妹', fill: 'leopard', rings: [[INK, 0.3], ['#fff', 0.14]], size: 0.34, deco: sparkles([0.94, 0.16, 0.18, '#fff']) }),
   wordArt({ id: 'y2k-age', text: 'アゲ↑↑', group: '辣妹', fill: ['#ff9fd2', HOT], rings: [[INK, 0.3], [LEMON, 0.15]], size: 0.36 }),
@@ -891,14 +936,16 @@ export const stickers = [
     group: '印章',
     size: 0.26,
     outline: 0.05,
-    svg: svg(160, 180, `
-      <g transform="rotate(-12 50 170)">
-        <path d="M50 172 C30 140 26 80 32 44 C36 20 44 8 54 8 C64 8 72 20 74 44 C78 80 72 140 50 172 Z" fill="#fff" stroke="#f0c2d8" stroke-width="4"/>
-        <path d="M51 148 C41 122 39 82 42 54 C44 38 48 28 54 28 C60 28 63 38 64 54 C66 82 62 122 51 148 Z" fill="#ffb3d6"/>
-      </g>
-      <g transform="rotate(12 110 170)">
-        <path d="M110 172 C90 140 86 80 92 44 C96 20 104 8 114 8 C124 8 132 20 134 44 C138 80 132 140 110 172 Z" fill="#fff" stroke="#f0c2d8" stroke-width="4"/>
-        <path d="M111 148 C101 122 99 82 102 54 C104 38 108 28 114 28 C120 28 123 38 124 54 C126 82 122 122 111 148 Z" fill="#ffb3d6"/>
+    svg: svg(190, 184, `
+      <g transform="translate(15 4)">
+        <g transform="rotate(-12 50 170)">
+          <path d="M50 172 C30 140 26 80 32 44 C36 20 44 8 54 8 C64 8 72 20 74 44 C78 80 72 140 50 172 Z" fill="#fff" stroke="#f0c2d8" stroke-width="4"/>
+          <path d="M51 148 C41 122 39 82 42 54 C44 38 48 28 54 28 C60 28 63 38 64 54 C66 82 62 122 51 148 Z" fill="#ffb3d6"/>
+        </g>
+        <g transform="rotate(12 110 170)">
+          <path d="M110 172 C90 140 86 80 92 44 C96 20 104 8 114 8 C124 8 132 20 134 44 C138 80 132 140 110 172 Z" fill="#fff" stroke="#f0c2d8" stroke-width="4"/>
+          <path d="M111 148 C101 122 99 82 102 54 C104 38 108 28 114 28 C120 28 123 38 124 54 C126 82 122 122 111 148 Z" fill="#ffb3d6"/>
+        </g>
       </g>`),
   },
   { id: 'y2k-hige', name: '猫咪胡须', group: '印章', size: 0.34, outline: 0.04, svg: WHISKERS },
@@ -1082,7 +1129,7 @@ export const backgrounds = [
     name: '豹纹',
     swatch: 'radial-gradient(ellipse at 40% 45%, #ff6fb5 0 3px, #2a1624 3.5px 5px, transparent 6px) 0 0 / 18px 16px, #ffc0df',
     paint(ctx, w, h) {
-      ctx.drawImage(cached('bg-leopard', w, h, (c, W, H) => leopard(c, W, H, { base: '#ffc0df', ring: '#2a1624', core: '#ff7ab8', cell: Math.min(W, H) * 0.2, seed: 9 })), 0, 0, w, h);
+      ctx.drawImage(cached('bg-leopard', w, h, (c, W, H) => leopard(c, W, H, { base: '#ffc0df', ring: '#2a1624', core: '#ff9fce', cell: Math.min(W, H) * 0.19, seed: 9 })), 0, 0, w, h);
     },
   },
   {
@@ -1166,21 +1213,22 @@ export const layouts = [
     date: { x: 64, y: 1756, size: 38, align: 'left' },
     serial: { x: 1136, y: 1756, size: 30, align: 'right' },
     cut: { y: 1478, label: 'ミニシール' },
+    // [x, y, r, kind]: kind indexes the frame's stamp set (0 main, 1 second, 2 light sparkle, 3 accent, 4 extra)
     spots: [
       [118, 92, 46, 0],
       [1082, 92, 46, 1],
       [262, 46, 20, 2],
-      [944, 202, 26, 2],
+      [944, 204, 24, 2],
       [772, 548, 32, 3],
       [1118, 552, 30, 0],
       [770, 632, 26, 1],
       [1120, 980, 30, 4],
-      [700, 200, 34, 2],
+      [700, 198, 32, 0],
       [600, 1756, 22, 0],
     ],
   },
   {
-    ...gridLayout({ id: 'grid6', name: '六宫格', cols: 2, rows: 3, W: 1200, H: 1800, pad: 64, gap: 30, top: 176, bottom: 140, shape: 'round', r: 36 }),
+    ...gridLayout({ id: 'grid6', name: '六宫格', cols: 2, rows: 3, W: 1200, H: 1800, pad: 70, gap: 50, top: 176, bottom: 140, shape: 'round', r: 36 }),
     desc: '2×3 · 6 张全用上',
     logo: { x: 600, y: 92, size: 80 },
     date: { x: 64, y: 1732, size: 38, align: 'left' },
@@ -1188,26 +1236,27 @@ export const layouts = [
     spots: [
       [116, 92, 44, 0],
       [1084, 92, 44, 1],
-      [600, 668, 34, 2],
-      [600, 1174, 34, 3],
+      [600, 662, 30, 3],
+      [600, 1174, 30, 0],
       [600, 1732, 24, 0],
-      [70, 668, 22, 2],
-      [1130, 1174, 22, 2],
+      [36, 662, 20, 2],
+      [1164, 1174, 20, 2],
+      [1164, 420, 18, 2],
     ],
   },
   {
-    ...stripLayout({ id: 'strip4', name: '竖条四格', n: 4, W: 600, H: 1800, side: 46, top: 150, gap: 22, bottom: 170, aspect: 1.4, shape: 'round', r: 26 }),
+    ...stripLayout({ id: 'strip4', name: '竖条四格', n: 4, W: 600, H: 1800, side: 56, top: 140, gap: 40, bottom: 150, aspect: 1.4, shape: 'round', r: 26 }),
     desc: '6 选 4 · 2×6 英寸长条',
-    logo: { x: 300, y: 78, size: 54 },
-    date: { x: 300, y: 1688, size: 32, align: 'center' },
-    serial: { x: 300, y: 1740, size: 24, align: 'center' },
+    logo: { x: 300, y: 72, size: 52 },
+    date: { x: 300, y: 1708, size: 32, align: 'center' },
+    serial: { x: 300, y: 1754, size: 24, align: 'center' },
     spots: [
-      [52, 76, 26, 0],
-      [548, 76, 26, 1],
-      [70, 1712, 26, 2],
-      [530, 1712, 26, 3],
-      [566, 520, 20, 2],
-      [34, 1270, 20, 2],
+      [52, 72, 26, 0],
+      [548, 72, 26, 1],
+      [74, 1730, 26, 3],
+      [526, 1730, 26, 4],
+      [566, 506, 16, 2],
+      [34, 1282, 16, 2],
     ],
   },
 ];
@@ -1388,7 +1437,7 @@ export const frames = [
     id: 'leopard',
     name: '辣妹豹纹',
     paper(ctx, W, H) {
-      leopard(ctx, W, H, { base: '#ffc3e0', ring: '#2a1624', core: '#ff86c2', cell: W * 0.13, seed: 11 });
+      leopard(ctx, W, H, { base: '#ffc3e0', ring: '#2a1624', core: '#ffa3d1', cell: W * 0.12, seed: 11 });
     },
     style: {
       rim: HOT,
@@ -1396,7 +1445,7 @@ export const frames = [
       text: INK,
       textBg: 'rgba(255,255,255,0.88)',
       logo: { fill: ['#ffa3d6', HOT], stroke: '#fff', outer: INK, star: LEMON },
-      stamps: [['heart', HOT], ['heart', INK], ['sparkle', '#fff'], ['lips', HOT], ['crown', LEMON]],
+      stamps: [['heart', HOT], ['heart', INK], ['sparkle', '#fff'], ['lips', HOT], ['crown', '#ffe45c']],
     },
   }),
   frame({
@@ -1424,7 +1473,7 @@ export const frames = [
       tab: '#a06bff',
       perf: 'rgba(120,80,160,0.5)',
       logo: { fill: ['#ff8ccc', '#b98aff', '#6fcfff'], stroke: '#fff', outer: '#7a4fd0', star: LEMON },
-      stamps: [['heart', '#ff8ccc'], ['star', LEMON], ['candy', '#b98aff'], ['sparkle', '#fff'], ['candy', '#ff8ccc']],
+      stamps: [['heart', '#ff8ccc'], ['star', LEMON], ['sparkle', '#fff'], ['candy', '#b98aff'], ['candy', '#ff8ccc']],
     },
   }),
   frame({
@@ -1465,7 +1514,7 @@ export const frames = [
       text: '#e0438f',
       textBg: 'rgba(255,255,255,0.9)',
       logo: { fill: ['#ffa3d6', PINK], stroke: '#fff', outer: '#e0438f', star: LEMON },
-      stamps: [['bow', '#ff7cc0'], ['strawberry', '#ff5f8a'], ['heart', '#ff4f7b'], ['cherry', '#ff3d6e']],
+      stamps: [['heart', '#ff4f7b'], ['bow', '#ff7cc0'], ['sparkle', '#fff'], ['strawberry', '#ff5f8a'], ['cherry', '#ff3d6e']],
     },
   }),
   frame({
@@ -1486,6 +1535,7 @@ export const frames = [
       cut: 'rgba(255,255,255,0.5)',
       shadow: 'rgba(255,46,143,0.45)',
       text: '#ffb3dc',
+      textBg: 'rgba(21,15,23,0.92)',
       tab: HOT,
       tabBg: '#150f17',
       perf: 'rgba(255,140,200,0.7)',

@@ -135,7 +135,7 @@ const theme = {
     { id: 'pop', name: '高饱和', desc: '颜色拉满，像综艺', fx: { saturation: 1.65, contrast: 1.12, curve: 0.18, exposure: 0.05 } },
     { id: 'none', name: '原图', desc: '什么都不加', fx: {} },
     { id: 'baojiang', name: '电子包浆', desc: '被转发了一千次', fx: { jpeg: 0.8, tint: 0.45, temp: 0.2, fade: 0.4, saturation: 0.8, contrast: 1.05, sharpen: 0.35, grain: 0.12 } },
-    { id: 'pixel', name: '像素风', desc: '8-bit 马赛克', fx: { pixel: 90, posterize: 6, saturation: 1.35, contrast: 1.08 } },
+    { id: 'pixel', name: '像素风', desc: '8-bit 马赛克', fx: { pixel: 84, posterize: 5, saturation: 1.2, contrast: 1.1, curve: 0.18 } },
     { id: 'haha', name: '哈哈镜', desc: '脸变大，越看越离谱', fx: { fisheye: 0.6, saturation: 1.25, contrast: 1.05 } },
     { id: 'mono', name: '黑白表情包', desc: '高反差，经典斗图', fx: { tone: 'mono', contrast: 1.5, curve: 0.35, brightness: 0.04, sharpen: 0.4 } },
   ],

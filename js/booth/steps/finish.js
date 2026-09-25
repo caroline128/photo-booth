@@ -336,7 +336,7 @@ export async function review(b) {
     h('dt', '相框'), h('dd', s.frame.name),
     h('dt', '滤镜'), h('dd', s.filter?.name || '原图'),
     h('dt', '装饰'), h('dd', `${s.deco?.stickers.length || 0} 张贴纸 · ${s.deco?.strokes.length || 0} 笔涂鸦`),
-    h('dt', '打印'), h('dd', `${t.print?.paperName || '相纸'} × ${copies}`),
+    h('dt', '打印'), h('dd', `${s.layout.paperName || t.print?.paperName || '相纸'} × ${copies}`),
   );
   main.append(h('div.review', h('div.review-left', img), h('div.review-right', h('h4', '要打印了哦！'), details, h('p.pane-tip', '打印之后就不能再修改了。'))));
   let choose;

@@ -41,7 +41,7 @@ export default {
   fonts: {
     display: '"Black Han Sans", "Dela Gothic One", sans-serif',
     ui: '"Jua", "ZCOOL KuaiLe", "Noto Sans SC", sans-serif',
-    load: ['Black Han Sans', 'Jua', 'Rubik Mono One', 'Pacifico', 'Caveat', 'Dela Gothic One'],
+    load: ['Black Han Sans', 'Jua', 'Rubik Mono One', 'Pacifico', 'Caveat', 'Dela Gothic One', 'ZCOOL KuaiLe'],
     text: canvasText,
   },
   bgm: { style: 'kpop', key: 62, prog: [5, 7, 4, 9] },
@@ -75,7 +75,7 @@ export default {
     poses: [
       { icon: '🫰', text: '比个心！', sub: '손가락 하트', line: ko('손가락 하트!', '比个心！') },
       { icon: '💕', text: '双手比心', sub: '더블 하트', line: zh('两只手都比个心～') },
-      { icon: '🙆', text: '举过头顶的大爱心', sub: '머리 위 하트', line: zh('手臂举过头顶，一起比个大爱心！') },
+      { icon: '🙆', text: '头顶大爱心', sub: '머리 위 하트', line: zh('手臂举过头顶，一起比个大爱心！') },
       { icon: '🥰', text: '捧脸比心', sub: '볼하트', line: ko('볼하트!', '捧脸比心！') },
       { icon: '🌸', text: '花朵托腮', sub: '꽃받침', line: zh('双手托住下巴，变成一朵花～') },
       { icon: '✌️', text: '辣妹剪刀手', sub: '갸루피스', line: ko('갸루피스!', '辣妹剪刀手！') },

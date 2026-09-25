@@ -66,7 +66,9 @@ vec2 lens(vec2 uv) {
   float r = len / rOut;
   float a = 2.4 * uFisheye;
   float f = a > 0.001 ? (exp(a * r) - 1.0) / (exp(a) - 1.0) : r;
-  float rSrc = (uCircle > 0.5 ? halfDiag * 0.94 : halfDiag) / uZoom;
+  // round peephole: the rim maps to the inscribed circle so we never sample
+  // past the image edge (which would smear the border pixels)
+  float rSrc = (uCircle > 0.5 ? 0.5 * min(uAspect, 1.0) * 0.995 : halfDiag) / uZoom;
   vec2 sd = len > 0.0 ? d / len * f * rSrc : vec2(0.0);
   return 0.5 + sd / vec2(uAspect, 1.0);
 }

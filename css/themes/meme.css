@@ -1,1 +1,400 @@
-/* Machine shell touches for .theme-meme (filled in with the theme pack). */
+/* Machine shell touches for .theme-meme — comic book: meme-yellow cabinet,
+   thick black outlines, halftone dots, a speech-bubble marquee, stickers slapped
+   on the cabinet and a retro-TV screen bezel. */
+
+.booth.theme-meme {
+  background:
+    radial-gradient(circle, rgba(20, 20, 20, 0.14) 1.6px, transparent 2.3px) 0 0 / 14px 14px,
+    repeating-conic-gradient(from 0deg at 50% 36%, #3cc8ff 0deg 9deg, #7fdcff 9deg 18deg);
+}
+
+/* ------------------------------------------------------------ top bar */
+
+.theme-meme .booth-top .exit,
+.theme-meme .tgl {
+  border: 3px solid #141414;
+  background: #fff;
+  color: #141414;
+  box-shadow: 3px 3px 0 #141414;
+}
+
+.theme-meme .marquee {
+  padding: 12px 38px 12px;
+  border-radius: 30px;
+  background: #fff;
+  border: 4px solid #141414;
+  box-shadow: 6px 6px 0 #141414;
+}
+
+/* speech-bubble tail */
+.theme-meme .marquee::before,
+.theme-meme .marquee::after {
+  content: "";
+  position: absolute;
+  left: 20%;
+  border-style: solid;
+  border-color: transparent;
+}
+
+.theme-meme .marquee::before {
+  bottom: -27px;
+  border-width: 27px 0 0 30px;
+  border-top-color: #141414;
+}
+
+.theme-meme .marquee::after {
+  bottom: -17px;
+  left: calc(20% + 5px);
+  border-width: 18px 0 0 20px;
+  border-top-color: #fff;
+}
+
+.theme-meme .marquee h1 {
+  color: #141414;
+  letter-spacing: 0.06em;
+  text-shadow: 2px 2px 0 var(--body), 4px 4px 0 var(--accent);
+}
+
+.theme-meme .marquee small {
+  margin-top: 6px;
+  color: #141414;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  opacity: 1;
+}
+
+.theme-meme .bulbs i {
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid #141414;
+  background: var(--accent);
+  box-shadow: none;
+  animation-name: meme-bulb;
+}
+
+.theme-meme .bulbs i:nth-child(3n + 2) {
+  background: #3cc8ff;
+}
+
+.theme-meme .bulbs i:nth-child(3n) {
+  background: var(--body);
+}
+
+@keyframes meme-bulb {
+  50% {
+    opacity: 0.2;
+  }
+}
+
+/* ------------------------------------------------------------ cabinet */
+
+.theme-meme .flashpanel {
+  border: 4px solid #141414;
+  background:
+    radial-gradient(circle, rgba(20, 20, 20, 0.2) 1.5px, transparent 2.2px) 0 0 / 10px 10px,
+    #fff;
+  box-shadow: 5px 5px 0 #141414;
+}
+
+.theme-meme .cabinet {
+  position: relative;
+  border: 5px solid #141414;
+  background:
+    radial-gradient(circle, rgba(20, 20, 20, 0.13) 1.8px, transparent 2.4px) 0 0 / 12px 12px,
+    var(--body);
+  box-shadow: 10px 10px 0 #141414;
+}
+
+/* stickers slapped on the cabinet */
+.theme-meme .cabinet::before,
+.theme-meme .cabinet::after {
+  position: absolute;
+  z-index: 3;
+  padding: 3px 12px;
+  border: 3px solid #141414;
+  border-radius: 12px;
+  box-shadow: 3px 3px 0 #141414;
+  pointer-events: none;
+}
+
+.theme-meme .cabinet::before {
+  content: "抽象!";
+  top: -16px;
+  left: -20px;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 22px;
+  transform: rotate(-12deg);
+}
+
+.theme-meme .cabinet::after {
+  content: "666";
+  top: -14px;
+  right: -16px;
+  background: #141414;
+  color: var(--body);
+  font-family: "Bangers", var(--font-display);
+  font-size: 26px;
+  letter-spacing: 0.06em;
+  transform: rotate(9deg);
+}
+
+.theme-meme .lens {
+  box-shadow: 0 0 0 4px #141414, 0 0 0 7px #fff, 3px 3px 0 7px #141414;
+}
+
+.theme-meme .plate {
+  background: #141414;
+  color: var(--body);
+  border-radius: 8px;
+  box-shadow: 3px 3px 0 var(--accent);
+}
+
+/* the screen sits in a chunky retro-TV bezel */
+.theme-meme .bezel {
+  position: relative;
+  padding: 14px 14px 22px;
+  border-radius: 34px;
+  border: 4px solid #141414;
+  background: linear-gradient(#444, #1d1d1d);
+  box-shadow: inset 0 0 0 3px #5c5c5c, 5px 5px 0 #141414;
+}
+
+.theme-meme .bezel::after {
+  content: "CH-06 · 抽象频道";
+  position: absolute;
+  right: 30px;
+  bottom: 2px;
+  color: #ff5a4a;
+  font-family: "VT323", monospace;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  pointer-events: none;
+}
+
+.theme-meme .screen-wrap {
+  border-radius: 24px / 30px;
+  border: 3px solid #141414;
+}
+
+.theme-meme .screen-wrap::after {
+  background:
+    radial-gradient(ellipse at 50% 50%, transparent 70%, rgba(0, 0, 0, 0.1)),
+    linear-gradient(115deg, rgba(255, 255, 255, 0.16), transparent 26%),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.035) 0 1px, transparent 1px 3px);
+}
+
+.theme-meme .screen-head {
+  border-bottom: 3px solid #141414;
+  background: var(--body);
+}
+
+.theme-meme .screen-foot {
+  border-top: 3px dashed #141414;
+}
+
+.theme-meme .screen-title b {
+  font-weight: 700;
+}
+
+.theme-meme .steps li.now {
+  border: 2px solid #141414;
+}
+
+.theme-meme .timer::before {
+  background: var(--body);
+}
+
+.theme-meme .speaker {
+  position: relative;
+  background:
+    radial-gradient(circle, #141414 2.2px, transparent 3px) 0 0 / 9px 9px,
+    rgba(255, 255, 255, 0.4);
+  border: 3px solid #141414;
+}
+
+.theme-meme .speaker::after {
+  content: "谁懂啊";
+  position: absolute;
+  left: 14px;
+  top: -12px;
+  padding: 1px 10px;
+  border: 2.5px solid #141414;
+  border-radius: 999px;
+  background: #fff;
+  color: #141414;
+  font-family: var(--font-display);
+  font-size: 15px;
+  transform: rotate(-5deg);
+  box-shadow: 2px 2px 0 #141414;
+}
+
+.theme-meme .coinslot,
+.theme-meme .printslot {
+  border: 3px solid #141414;
+  background: #fff;
+  color: #141414;
+  box-shadow: 4px 4px 0 #141414;
+}
+
+/* ------------------------------------------------------------ on-screen UI */
+
+.theme-meme .btn {
+  border: 3px solid #141414;
+  box-shadow: 3px 3px 0 #141414;
+}
+
+.theme-meme .btn:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 #141414;
+}
+
+.theme-meme .btn.ghost {
+  --b: #ffffff;
+}
+
+.theme-meme .count {
+  font-family: "Bangers", var(--font-display);
+  color: var(--body);
+  -webkit-text-stroke: 8px #141414;
+  paint-order: stroke fill;
+  text-shadow: 8px 8px 0 #141414;
+}
+
+.theme-meme .pose {
+  border: 3px solid #141414;
+  box-shadow: 4px 4px 0 #141414;
+}
+
+.theme-meme .pose b {
+  font-family: "Noto Sans SC", sans-serif;
+  font-weight: 900;
+}
+
+.theme-meme .attract-title {
+  letter-spacing: 0.04em;
+  text-shadow: 4px 4px 0 var(--body), 7px 7px 0 var(--accent);
+}
+
+.theme-meme .attract-sample {
+  border: 4px solid #141414;
+  box-shadow: 10px 10px 0 #141414;
+}
+
+.theme-meme .frame-preview,
+.theme-meme .filter-preview,
+.theme-meme .review-img,
+.theme-meme .pick-preview {
+  border: 3px solid #141414;
+  box-shadow: 7px 7px 0 #141414;
+}
+
+.theme-meme .live {
+  box-shadow: 0 0 0 4px #141414;
+}
+
+/* meme captions: preset chips and inputs in the heavy meme face (this also
+   gets the 900-weight glyphs downloaded for the canvas) */
+.theme-meme .phrase {
+  border: 2px solid #141414;
+  background: #141414;
+  color: var(--body);
+  font-family: "Noto Sans SC", sans-serif;
+  font-weight: 900;
+}
+
+.theme-meme .phrase:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.theme-meme .caption-row .text-input {
+  border: 3px solid #141414;
+  font-family: "Noto Sans SC", sans-serif;
+  font-weight: 900;
+  font-size: 17px;
+}
+
+.theme-meme .caption-row img {
+  border: 2px solid #141414;
+}
+
+.theme-meme .color {
+  border-color: #141414;
+}
+
+/* keep tall sticker thumbnails (fire, bolt…) from stretching the 4-column
+   palette: square cells, image contained inside */
+.theme-meme .sticker-btn {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.theme-meme .sticker-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.theme-meme .progress {
+  border: 2px solid #141414;
+  background: rgba(20, 20, 20, 0.08);
+}
+
+/* print-out scene: dark text on the yellow machine */
+.theme-meme .out-machine {
+  border: 5px solid #141414;
+  border-bottom: 0;
+}
+
+.theme-meme .out-label {
+  color: #141414;
+  text-shadow: 2px 2px 0 #fff;
+}
+
+/* ------------------------------------------------------------ lobby cabinet */
+
+.m-meme .c-marquee b {
+  text-shadow: 2px 2px 0 var(--body);
+}
+
+.m-meme .c-body {
+  position: relative;
+}
+
+.m-meme .c-body::after {
+  content: "笑死";
+  position: absolute;
+  left: -10px;
+  bottom: 18px;
+  z-index: 2;
+  padding: 1px 8px;
+  border: 2px solid #141414;
+  border-radius: 8px;
+  background: #fff;
+  color: #141414;
+  font-family: var(--font-display);
+  font-size: 15px;
+  transform: rotate(-10deg);
+  box-shadow: 2px 2px 0 #141414;
+}
+
+.m-meme .c-sample {
+  border: 2px solid #141414;
+}
+
+@media (max-width: 520px) {
+  .theme-meme .marquee {
+    padding: 10px 14px 8px;
+    border-radius: 22px;
+  }
+  .theme-meme .marquee small {
+    font-size: 11px;
+    letter-spacing: 0.02em;
+  }
+  .theme-meme .cabinet::before,
+  .theme-meme .cabinet::after {
+    font-size: 17px;
+  }
+}

@@ -348,6 +348,11 @@
   margin-top: 6px;
 }
 
+.timer.long b {
+  font-size: 15px;
+  letter-spacing: -0.03em;
+}
+
 .timer-label {
   position: absolute;
   top: 12px;

@@ -42,7 +42,7 @@ css/themes/<id>.css       机器外壳的主题化样式（选择器以 .theme-<
 | `captions` | 可选，开启「配字」步骤：`{ title, lead, presets: [...], max, font }`，结果在 `info.captions[i]`；`font` 是相框画配字用的 canvas font 字符串（用来预载用户输入的字） |
 | `decoBooth` | 可选，拍完后显示「请移动到涂鸦台」过场：`{ title, text, sub, icon }`（台词键 `move`） |
 | `print` | `{ kind: 'dyesub'|'chemical', sheet: 'single'|'strip-pair'|'sticker', copies, paperName, backColor }` |
-| （版式可用 `sheet` 字段覆盖，比如只有竖条版式打印成两条） | |
+| （版式可用 `sheet`、`paperName` 字段覆盖，比如只有竖条版式打印成两条） | |
 | `placeholderTint` | 选框页占位剪影的两种底色 |
 
 ## 2. 道具（AR，跟着脸走）

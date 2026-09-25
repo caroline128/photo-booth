@@ -28,7 +28,8 @@ async function main() {
   const t = (await import(`../themes/${id}/index.js`)).default;
   document.getElementById('title').textContent = `${t.name} · ${t.title} (${t.id})`;
   await ensureFonts(t.fonts?.load || [], themeText(t));
-  await document.fonts.ready;
+  // don't hang forever when a web font request stalls
+  await Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 5000))]);
   const session = { options: defaultOptions(t) };
 
   // sample print as shown in the lobby

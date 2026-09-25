@@ -12,6 +12,7 @@ export function stepTimer(seconds, { onTick, warnAt = 10 } = {}) {
   const num = h('b', String(seconds));
   const el = h('div.timer', { role: 'timer', 'aria-label': `剩余 ${seconds} 秒` }, h('span.timer-label', 'TIME'), num);
   el.style.setProperty('--p', '1');
+  el.classList.toggle('long', seconds >= 100);
   let left = seconds;
   let id = null;
   let resolveFn;
@@ -24,6 +25,7 @@ export function stepTimer(seconds, { onTick, warnAt = 10 } = {}) {
     el.style.setProperty('--p', String(Math.max(0, left) / seconds));
     el.setAttribute('aria-label', `剩余 ${left} 秒`);
     el.classList.toggle('warn', left <= warnAt);
+    el.classList.toggle('long', left >= 100);
     if (left <= 5 && left > 0) sfx.click();
     onTick?.(left);
     if (left <= 0) {

@@ -25,7 +25,7 @@ export default {
   inspiration: '日本プリクラ（平成辣妹 / Y2K 复刻机）',
   price: 3,
   badge: 'Y2K',
-  screenText: '♡ PURI ♡',
+  screenText: '6 SHOTS ♡',
   lang: 'ja-JP',
   voice: { pitch: 1.55, rate: 1.08 },
   colors: {
@@ -79,12 +79,12 @@ export default {
     retakes: 1,
     skipLabel: '⚡ 立即拍',
     poses: [
-      { text: '辣妹剪刀手', icon: '✌️', sub: 'ギャルピース', line: ja('ギャルピース！', '辣妹剪刀手！手背朝外往下比～') },
-      { text: '比个耶', icon: '😆', sub: 'ピース', line: ja('ピース！', '比个耶！') },
+      { text: '辣妹剪刀手', icon: '💅', sub: 'ギャルピース', line: ja('ギャルピース！', '辣妹剪刀手！手背朝外往下比～') },
+      { text: '比个耶', icon: '✌️', sub: 'ピース', line: ja('ピース！', '比个耶！') },
       { text: '小老虎嗷呜', icon: '🐯', sub: 'がおー', line: ja('がおー！', '嗷呜～ 双手当爪子！') },
-      { text: '敬礼剪刀手', icon: '🫡', sub: 'ラジャ', line: ja('ラジャ！', '收到！剪刀手放在额头边敬个礼～') },
+      { text: '敬礼剪刀手', icon: '🙋', sub: 'ラジャ', line: ja('ラジャ！', '收到！剪刀手放在额头边敬个礼～') },
       { text: '捧脸显脸小', icon: '🤲', sub: '小顔ポーズ', line: ja('小顔ポーズ！', '双手捧脸，显得脸小～') },
-      { text: '双手比心', icon: '🫶', sub: 'ハート', line: ja('両手でハート！', '最后一张，双手比个心！') },
+      { text: '双手比心', icon: '💕', sub: 'ハート', line: ja('両手でハート！', '最后一张，双手比个心！') },
     ],
   },
   selectTime: 60,
@@ -108,22 +108,22 @@ export default {
       line: ja('盛れ度をえらんでね！', '选一下美颜程度吧！'),
     },
   ],
-  sampleProps: ['y2k-ribbon', 'y2k-star-pins'],
+  sampleProps: ['y2k-ribbon', 'y2k-blush'],
   maxProps: 4,
   props,
   backgrounds,
   liveFx(session, faces, w, h) {
     // mild "盛れ": whitening + soft skin + bigger eyes, never a full face warp
     if (session.options?.mori === 'heisei') {
-      return { smooth: 0.6, whiten: 0.55, glow: 0.28, exposure: 0.12, eyes: eyesFx(faces, w, h, 0.32) };
+      return { smooth: 0.6, whiten: 0.5, glow: 0.24, exposure: 0.08, eyes: eyesFx(faces, w, h, 0.32) };
     }
     return { smooth: 0.32, whiten: 0.25, glow: 0.12, exposure: 0.05, eyes: eyesFx(faces, w, h, 0.18) };
   },
   filters: [
     { id: 'natural', name: '自然 ナチュラル', desc: '只有盛れ修图', fx: { saturation: 1.05, contrast: 1.02 } },
     { id: 'pink', name: '美白粉 ピンク', desc: '白里透粉的平成少女肤色', fx: { brightness: 0.03, tint: -0.22, temp: 0.08, saturation: 0.96, fade: 0.06 } },
-    { id: 'kira', name: '闪亮 キラキラ', desc: '柔光 + 高光，亮晶晶', fx: { glow: 0.6, brightness: 0.04, contrast: 1.04, saturation: 1.12 } },
-    { id: 'neon', name: '霓虹 ネオン', desc: '粉紫霓虹，夜店辣妹感', fx: { saturation: 1.3, tint: -0.32, temp: -0.1, contrast: 1.1, vignette: 0.28 } },
+    { id: 'kira', name: '闪亮 キラキラ', desc: '柔光 + 高光，亮晶晶', fx: { glow: 0.42, contrast: 1.1, saturation: 1.18, curve: 0.12 } },
+    { id: 'neon', name: '霓虹 ネオン', desc: '粉紫霓虹，夜店辣妹感', fx: { saturation: 1.35, tint: -0.4, temp: -0.06, contrast: 1.12, brightness: 0.02, vignette: 0.16 } },
     { id: 'mono', name: '黑白 モノクロ', desc: '奶油感黑白', fx: { tone: 'mono', contrast: 1.06, brightness: 0.04, fade: 0.05 } },
   ],
   layouts,

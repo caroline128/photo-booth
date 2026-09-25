@@ -14,6 +14,7 @@ const H = +(process.env.H || 900);
 const ids = process.argv.slice(2);
 
 fs.mkdirSync(OUT, { recursive: true });
+const errorsRef = [];
 
 async function run() {
   const browser = await chromium.launch({
@@ -35,7 +36,8 @@ async function run() {
     ignoreHTTPSErrors: true, // web fonts come through the sandbox proxy
   });
   const page = await context.newPage();
-  const errors = [];
+  failPage = page;
+  const errors = errorsRef;
   page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}\n${e.stack || ''}`));
   page.on('console', (m) => {
     if (m.type() === 'error' || m.type() === 'warning') errors.push(`${m.type()}: ${m.text()}`);
@@ -50,14 +52,14 @@ async function run() {
     }
   };
 
-  await page.goto(BASE + '/#/');
+  await page.goto(BASE + '/#/', { waitUntil: 'domcontentloaded', timeout: 60000 });
   await page.waitForTimeout(2500);
   await shot(`00-shop-${W}`);
   const themes = ids.length ? ids : await page.$$eval('.cab', (els) => els.map((e) => [...e.classList].find((c) => c.startsWith('m-')).slice(2)));
 
   for (const id of themes) {
     console.log('▶', id);
-    await page.goto(`${BASE}/#/m/${id}`);
+    await page.goto(`${BASE}/#/m/${id}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
     await page.waitForSelector('.attract', { timeout: 15000 });
     await page.waitForTimeout(1800);
     await shot(`${id}-01-attract`);
@@ -65,16 +67,15 @@ async function run() {
     // coins
     await page.waitForSelector('.coin-step');
     await shot(`${id}-02-coin`);
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 16; i++) {
       if (!(await page.$('.coin-step'))) break;
-      const token = await page.$('.token');
-      if (!token) {
-        const refill = await page.$('.coin-side .btn');
-        if (refill) await refill.click();
+      if (!(await page.locator('.token').count())) {
+        await page.locator('.coin-side .btn').click({ timeout: 3000 }).catch(() => {});
         continue;
       }
-      await token.click();
-      await page.waitForTimeout(250);
+      // the wallet re-renders after every coin, so always re-query
+      await page.locator('.token').last().click({ timeout: 3000, force: true }).catch(() => {});
+      await page.waitForTimeout(300);
     }
     // frame
     await page.waitForSelector('.frame-step', { timeout: 8000 });
@@ -92,7 +93,7 @@ async function run() {
       await page.click('.screen-foot .btn.primary');
     }
     // camera / props
-    await page.waitForSelector('.prep, .modal', { timeout: 15000 });
+    await page.waitForSelector('.prep, .modal', { timeout: 40000 });
     if (await page.$('.modal')) {
       await shot(`${id}-05-camera-modal`);
       await page.click('.modal .btn.primary');
@@ -220,7 +221,7 @@ async function run() {
     await page.waitForTimeout(1000);
     await shot(`${id}-16-viewer-back`);
   }
-  await page.goto(BASE + '/#/');
+  await page.goto(BASE + '/#/', { waitUntil: 'domcontentloaded', timeout: 60000 });
   await page.waitForTimeout(1500);
   await page.evaluate(() => document.querySelector('.photo-wall')?.scrollIntoView());
   await page.waitForTimeout(500);
@@ -232,7 +233,13 @@ async function run() {
   } else console.log('\n✅ no console errors');
 }
 
-run().catch((e) => {
+let failPage = null;
+run().catch(async (e) => {
   console.error(e);
+  if (failPage) {
+    await failPage.screenshot({ path: path.join(OUT, 'FAIL.png'), timeout: 20000 }).catch(() => {});
+    console.log('failure screenshot: FAIL.png');
+  }
+  if (errorsRef.length) console.log('errors so far:\n - ' + [...new Set(errorsRef)].join('\n - ').slice(0, 3000));
   process.exit(1);
 });

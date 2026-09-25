@@ -28,7 +28,7 @@ const F_HEAVY = '"Noto Sans SC", "ZCOOL KuaiLe", sans-serif';
 
 // Web-font specs for canvas text stickers (the renderer downloads exactly
 // these glyphs before drawing — CJK fonts arrive in unicode-range slices).
-const fs = (family, text, weight = 400) => ({ fontSpec: { font: `${weight} 100px "${family}"`, text } });
+const glyphs = (family, text, weight = 400) => ({ fontSpec: { font: `${weight} 100px "${family}"`, text } });
 
 const r2 = (n) => Math.round(n * 100) / 100;
 
@@ -113,8 +113,8 @@ export const props = [
     anchor: 'neck',
     w: 2.3,
     dy: -0.3,
-    origin: [0.5, 0.1],
-    svg: svg(200, 124, (() => {
+    origin: [0.5, 0.105],
+    svg: svg(200, 114, (() => {
       // chunky links draped in a shallow U, then the medallion
       let s = '';
       const n = 15;
@@ -131,11 +131,11 @@ export const props = [
         s += `<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="9.6" ry="${ry}" ${tr} fill="none" stroke="#f2c94c" stroke-width="4.2"/>`;
       }
       return `${s}
-        <path d="M100 56 L100 64" stroke="#7a560c" stroke-width="8" stroke-linecap="round"/>
-        <circle cx="100" cy="88" r="27" fill="url(#gold)" stroke="#7a560c" stroke-width="4"/>
-        <circle cx="100" cy="88" r="20" fill="none" stroke="#b8871c" stroke-width="2.5"/>
-        <path d="${bellD(100, 87, 13.5)}" fill="#8a6414"/>
-        <path d="${sparkleD(119, 70, 9)}" fill="#fffbe0"/>`;
+        <path d="M100 55 L100 60" stroke="#7a560c" stroke-width="8" stroke-linecap="round"/>
+        <circle cx="100" cy="83" r="24" fill="url(#gold)" stroke="#7a560c" stroke-width="4"/>
+        <circle cx="100" cy="83" r="17.5" fill="none" stroke="#b8871c" stroke-width="2.5"/>
+        <path d="${bellD(100, 82, 12)}" fill="#8a6414"/>
+        <path d="${sparkleD(117, 66, 8)}" fill="#fffbe0"/>`;
     })(), `<radialGradient id="gold" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff4b0"/><stop offset=".5" stop-color="#e5b62f"/><stop offset="1" stop-color="#9c7212"/></radialGradient>`),
   },
   {
@@ -409,6 +409,15 @@ function timecode(date, addSec = 0, style = 'iso') {
 
 const serialNo = (info) => `No.${String(info.serial || 0).padStart(6, '0')}`;
 
+// The timecode sticker is rendered several times (palette thumb, board,
+// print bake): pin its clock for a while so every copy shows the same time.
+let pinned = 0;
+function stickerClock() {
+  const now = Date.now();
+  if (now - pinned > 15 * 60 * 1000) pinned = now;
+  return new Date(pinned);
+}
+
 // ----------------------------------------------------------------- stickers
 
 /** Canvas sticker helper (keeps the definitions short). */
@@ -426,7 +435,7 @@ export const stickers = [
     ctx.stroke(p);
     comic(ctx, 'DING', w * 0.47, h * 0.37, h * 0.3, { fill: INK, stroke: '#fff', sw: 0.18, rot: -0.12, maxW: w * 0.62 });
     comic(ctx, 'DONG!', w * 0.53, h * 0.64, h * 0.32, { fill: ORANGE, stroke: INK, sw: 0.2, rot: -0.12, maxW: w * 0.68 });
-  }, fs('Bangers', 'DING DONG!')),
+  }, glyphs('Bangers', 'DING DONG!')),
   cs('fe-dingdong-cn', '叮咚！', '拟声', 0.34, 0.58, (ctx, w, h) => {
     comic(ctx, '叮咚!', w * 0.47, h * 0.56, h * 0.66, { font: F_CN, fill: ACID, stroke: INK, sw: 0.16, depth: 6, rot: -0.07, maxW: w * 0.84 });
     ctx.strokeStyle = INK;
@@ -439,7 +448,7 @@ export const stickers = [
       ctx.lineTo(w * 0.9 + Math.cos(a) * w * 0.085, h * 0.2 + Math.sin(a) * w * 0.085);
       ctx.stroke();
     }
-  }, fs('ZCOOL KuaiLe', '叮咚!')),
+  }, glyphs('ZCOOL KuaiLe', '叮咚!')),
   cs('fe-boom', 'BOOM!', '拟声', 0.36, 0.82, (ctx, w, h) => {
     const outer = burstPath(w / 2, h / 2, w * 0.49, h * 0.48, 13, 0.66, 0.24, 9);
     const inner = burstPath(w / 2, h / 2, w * 0.36, h * 0.34, 11, 0.72, 0.2, 4);
@@ -452,7 +461,7 @@ export const stickers = [
     ctx.fillStyle = '#ffd83d';
     ctx.fill(inner);
     comic(ctx, 'BOOM!', w * 0.5, h * 0.53, h * 0.34, { fill: '#fff', stroke: INK, sw: 0.2, depth: 4, rot: -0.1, maxW: w * 0.74 });
-  }, fs('Bangers', 'BOOM!')),
+  }, glyphs('Bangers', 'BOOM!')),
   cs('fe-wow', 'WOW!', '拟声', 0.34, 0.52, (ctx, w, h) => {
     comic(ctx, 'WOW!', w * 0.48, h * 0.56, h * 0.74, { fill: PINK, stroke: INK, sw: 0.14, inner: '#fff', innerW: 0.04, depth: 5, rot: -0.08, maxW: w * 0.84 });
     ctx.fillStyle = ACID;
@@ -463,10 +472,10 @@ export const stickers = [
       ctx.fill(p);
       ctx.stroke(p);
     }
-  }, fs('Bangers', 'WOW!')),
+  }, glyphs('Bangers', 'WOW!')),
   cs('fe-wasai', '哇塞！', '拟声', 0.34, 0.56, (ctx, w, h) => {
     comic(ctx, '哇塞!', w * 0.5, h * 0.54, h * 0.62, { font: F_HEAVY, weight: 900, fill: ORANGE, stroke: INK, sw: 0.14, inner: '#ffe0cf', innerW: 0.035, depth: 6, skew: -0.14, rot: -0.05, maxW: w * 0.86 });
-  }, fs('Noto Sans SC', '哇塞!', 900)),
+  }, glyphs('Noto Sans SC', '哇塞!', 900)),
   cs('fe-pu', '噗！', '拟声', 0.3, 0.9, (ctx, w, h) => {
     const p = blobPath(w * 0.5, h * 0.5, w * 0.38, { n: 7, amp: 0.13, seed: 12 });
     ctx.lineJoin = 'round';
@@ -488,7 +497,7 @@ export const stickers = [
     ctx.fill();
     ctx.globalAlpha = 1;
     comic(ctx, '噗!', w * 0.52, h * 0.53, h * 0.44, { font: F_HEAVY, weight: 900, fill: '#fff', stroke: INK, sw: 0.16, depth: 4, rot: 0.08, maxW: w * 0.66 });
-  }, fs('Noto Sans SC', '噗!', 900)),
+  }, glyphs('Noto Sans SC', '噗!', 900)),
   cs('fe-omg', 'OMG', '拟声', 0.36, 0.5, (ctx, w, h) => {
     const cols = [ACID, ORANGE, PINK];
     const rots = [-0.14, 0.08, -0.05];
@@ -509,13 +518,13 @@ export const stickers = [
       comic(ctx, ch, cx, cy + box * 0.04, box * 0.82, { fill: INK, stroke: null, rot: rots[i] });
     });
     comic(ctx, '!!', w * 0.95, h * 0.2, h * 0.34, { fill: '#fff', stroke: INK, sw: 0.22, rot: 0.2 });
-  }, fs('Bangers', 'OMG!')),
+  }, glyphs('Bangers', 'OMG!')),
   cs('fe-haha', '哈哈哈', '拟声', 0.36, 0.5, (ctx, w, h) => {
     const cols = [ACID, '#fff', ORANGE];
     for (let i = 0; i < 3; i++) {
       comic(ctx, '哈', w * (0.18 + i * 0.32), h * (0.56 + (i % 2 ? -0.1 : 0.06)), h * 0.62, { font: F_HEAVY, weight: 900, fill: cols[i], stroke: INK, sw: 0.16, depth: 4, rot: (i - 1) * 0.16 });
     }
-  }, fs('Noto Sans SC', '哈', 900)),
+  }, glyphs('Noto Sans SC', '哈', 900)),
   cs('fe-bighead', 'BIG HEAD', '拟声', 0.42, 0.3, (ctx, w, h) => {
     // black tape with torn ends
     const r = rng(21);
@@ -533,7 +542,7 @@ export const stickers = [
     ctx.fillStyle = ORANGE;
     ctx.fillRect(w * 0.04, h * 0.1, w * 0.92, h * 0.06);
     ctx.fillRect(w * 0.04, h * 0.84, w * 0.92, h * 0.06);
-  }, fs('Rubik Mono One', 'BIG HEAD')),
+  }, glyphs('Rubik Mono One', 'BIG HEAD')),
 
   // ---------- 门铃 (doorbell / peephole / security cam)
   {
@@ -592,10 +601,10 @@ export const stickers = [
     ctx.arc(w * 0.24, h * 0.5, h * 0.2, 0, TAU);
     ctx.fill();
     ctx.restore();
-    label(ctx, 'REC', w * 0.62, h * 0.52, h * 0.62, { color: '#fff', shadow: null, align: 'center' });
-  }, { outline: 0, ...fs('VT323', 'REC') }),
+    label(ctx, 'REC', w * 0.61, h * 0.5, h * 0.86, { color: '#fff', shadow: null, align: 'center', maxW: w * 0.5 });
+  }, { outline: 0, ...glyphs('VT323', 'REC') }),
   cs('fe-timecode', '时间码', '门铃', 0.42, 0.3, (ctx, w, h) => {
-    const d = new Date();
+    const d = stickerClock();
     rrect(ctx, 0, 0, w, h, h * 0.1);
     ctx.fillStyle = 'rgba(8,10,8,0.72)';
     ctx.fill();
@@ -603,9 +612,9 @@ export const stickers = [
     ctx.beginPath();
     ctx.arc(w * 0.06, h * 0.3, h * 0.09, 0, TAU);
     ctx.fill();
-    label(ctx, 'REC  CAM-01', w * 0.11, h * 0.31, h * 0.34, { color: '#fff', maxW: w * 0.84 });
-    label(ctx, timecode(d), w * 0.05, h * 0.7, h * 0.34, { color: NV, maxW: w * 0.9 });
-  }, { outline: 0, ...fs('VT323', 'REC CAM-01 0123456789-:') }),
+    label(ctx, 'REC  CAM-01', w * 0.11, h * 0.3, h * 0.42, { color: '#fff', maxW: w * 0.84 });
+    label(ctx, timecode(d), w * 0.05, h * 0.7, h * 0.44, { color: NV, maxW: w * 0.9 });
+  }, { outline: 0, ...glyphs('VT323', 'REC CAM-01 0123456789-:') }),
   cs('fe-whos', "WHO'S THERE?", '门铃', 0.36, 0.74, (ctx, w, h) => {
     const p = bubblePath(w * 0.04, h * 0.05, w * 0.92, h * 0.7, h * 0.3, [w * 0.24, h * 0.96, w * 0.07]);
     ctx.lineJoin = 'round';
@@ -616,7 +625,7 @@ export const stickers = [
     ctx.stroke(p);
     comic(ctx, "WHO'S", w * 0.5, h * 0.25, h * 0.27, { fill: INK, stroke: null, maxW: w * 0.66 });
     comic(ctx, 'THERE?', w * 0.5, h * 0.52, h * 0.3, { fill: ORANGE, stroke: INK, sw: 0.14, maxW: w * 0.7 });
-  }, fs('Bangers', "WHO'S THERE?")),
+  }, glyphs('Bangers', "WHO'S THERE?")),
   cs('fe-sheiya', '谁呀？', '门铃', 0.3, 0.7, (ctx, w, h) => {
     const p = bubblePath(w * 0.05, h * 0.05, w * 0.9, h * 0.68, h * 0.18, [w * 0.78, h * 0.96, w * 0.07]);
     ctx.lineJoin = 'round';
@@ -626,7 +635,7 @@ export const stickers = [
     ctx.strokeStyle = INK;
     ctx.stroke(p);
     comic(ctx, '谁呀？', w * 0.5, h * 0.4, h * 0.42, { font: F_CN, fill: INK, stroke: INK, sw: 0.05, maxW: w * 0.8 });
-  }, fs('ZCOOL KuaiLe', '谁呀？')),
+  }, glyphs('ZCOOL KuaiLe', '谁呀？')),
   cs('fe-knock', 'KNOCK KNOCK', '门铃', 0.36, 0.62, (ctx, w, h) => {
     // a little wooden door sign
     ctx.save();
@@ -649,7 +658,7 @@ export const stickers = [
     ctx.restore();
     comic(ctx, 'KNOCK', w * 0.5, h * 0.33, h * 0.3, { fill: '#fff', stroke: INK, sw: 0.18, rot: -0.06, maxW: w * 0.8 });
     comic(ctx, 'KNOCK!', w * 0.52, h * 0.65, h * 0.3, { fill: ACID, stroke: INK, sw: 0.18, rot: -0.06, maxW: w * 0.8 });
-  }, fs('Bangers', 'KNOCK!')),
+  }, glyphs('Bangers', 'KNOCK!')),
   {
     id: 'fe-cctv',
     name: '监控摄像头',
@@ -717,7 +726,7 @@ export const stickers = [
   }, { outline: 0 }),
   {
     id: 'fe-smiley',
-    name: '滴漆笑脸',
+    name: '眨眼滴漆笑脸',
     group: '涂鸦',
     size: 0.24,
     outline: 0.045,
@@ -725,8 +734,8 @@ export const stickers = [
       <path d="M40 112 L40 150 C40 160 52 160 52 150 L52 118 Z M86 118 L86 164 C86 174 98 174 98 164 L98 110Z M64 126 L64 138 C64 146 74 146 74 138 L74 128Z" fill="${ACID}" stroke="${INK}" stroke-width="5" stroke-linejoin="round"/>
       <circle cx="70" cy="68" r="60" fill="${ACID}" stroke="${INK}" stroke-width="6"/>
       <path d="M40 114 L40 128 M52 118 L52 126 M86 118 L86 130 M98 110 L98 122 M64 126 L64 130 M74 128 L74 132" stroke="${ACID}" stroke-width="7"/>
-      <path d="M42 44 L58 60 M58 44 L42 60" stroke="${INK}" stroke-width="7" stroke-linecap="round"/>
-      <ellipse cx="94" cy="52" rx="7" ry="10" fill="${INK}"/>
+      <path d="M38 56 Q48 42 60 54" stroke="${INK}" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <ellipse cx="92" cy="52" rx="7" ry="10" fill="${INK}"/>
       <path d="M34 78 C44 108 96 108 106 78" stroke="${INK}" stroke-width="7" fill="none" stroke-linecap="round"/>
       <path d="M100 84 L110 72" stroke="${INK}" stroke-width="6" stroke-linecap="round"/>
       <path d="M28 46 C34 30 46 20 60 16" stroke="#fff" stroke-width="6" fill="none" opacity=".5" stroke-linecap="round"/>`),
@@ -830,6 +839,7 @@ export const layouts = [
     id: 'peephole',
     name: '超大猫眼',
     desc: '一张巨型鱼眼大头 · 4×5 相纸 · 6 张里挑 1 张',
+    paperName: '4×5 相纸',
     size: [1200, 1500],
     photos: 1,
     slots: [{ x: 160, y: 240, w: 880, h: 880, shape: 'circle' }],
@@ -839,6 +849,7 @@ export const layouts = [
     ...stripLayout({ id: 'cctv', name: '监控三连', n: 3, W: 600, H: 1800, side: 34, top: 170, gap: 34, bottom: 300, aspect: 4 / 3, shape: 'rect' }),
     desc: '三格监控画面竖条 · 一式两条 · 6 张里挑 3 张',
     sheet: 'strip-pair',
+    paperName: '2×6 竖条（一式两条）',
   },
 ];
 
