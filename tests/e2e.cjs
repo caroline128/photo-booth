@@ -2,9 +2,11 @@
 //   NODE_PATH=$(npm root -g) node tests/e2e.cjs [themeId ...]
 // Env: BASE (default http://localhost:5173), OUT (screenshot dir), W/H viewport,
 //      DEMO=1 to deny the camera and use the demo cat, NOFONTS=1 to skip web
-//      fonts (flaky networks), JPEG=1 for compact screenshots.
+//      fonts (flaky networks), FONTCACHE=1 to fetch fonts via curl into a
+//      local cache, JPEG=1 for compact screenshots.
 
 const { chromium } = require('playwright');
+const { useFontCache } = require('./font-cache.cjs');
 const fs = require('fs');
 const path = require('path');
 
@@ -44,6 +46,7 @@ async function run() {
     if (m.type() === 'error' || m.type() === 'warning') errors.push(`${m.type()}: ${m.text()}`);
   });
   if (process.env.NOFONTS) await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
+  else await useFontCache(page);
   const shot = async (name) => {
     try {
       const jpeg = !!process.env.JPEG; // compact shots for docs
