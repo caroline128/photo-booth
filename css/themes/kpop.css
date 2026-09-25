@@ -133,8 +133,8 @@
 
 /* white countdown digits with a pink rim stay readable on pastel backdrops */
 .theme-kpop .count {
-  -webkit-text-stroke: 4px #ff4fa3;
-  text-shadow: 0 6px 0 rgba(120, 20, 70, 0.3), 0 0 30px var(--glow);
+  -webkit-text-stroke: 7px #ff4fa3;
+  text-shadow: 0 6px 0 rgba(120, 20, 70, 0.3), 0 0 24px rgba(60, 10, 40, 0.3), 0 0 40px var(--glow);
 }
 
 .theme-kpop .roll {

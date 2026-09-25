@@ -9,6 +9,7 @@ import { sfx, say, playBgm, stopBgm, setSubtitleSink, hush } from '../core/audio
 import { ensureFonts, themeText } from '../core/fonts.js';
 import { stepTimer, modal } from './ui.js';
 import { attract, coin } from './steps/intro.js';
+import { defaultOptions } from './sample.js';
 import { chooseFrame, chooseOptions, prep } from './steps/setup.js';
 import { shoot, pickAndRetake } from './steps/shoot.js';
 import { chooseFilter, captions, moveToDecoBooth, decorate, review, printOut } from './steps/finish.js';
@@ -30,7 +31,7 @@ export class Booth {
     this.theme = theme;
     this.onExit = onExit;
     this.session = {
-      options: {},
+      options: defaultOptions(theme),
       props: [],
       background: null,
       shots: [],
@@ -190,8 +191,10 @@ export class Booth {
     try {
       await attract(this);
       await coin(this);
-      await chooseFrame(this);
+      // machine mode first (flash, lens, retouch, date stamp…), then the frame,
+      // so the frame previews already reflect those choices
       await chooseOptions(this);
+      await chooseFrame(this);
       await prep(this);
       await shoot(this);
       await pickAndRetake(this);

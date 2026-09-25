@@ -9,7 +9,6 @@ import { compose, slotAspect } from '../../engine/compose.js';
 import { openCamera, createDemoSource } from '../../engine/camera.js';
 import { Stage } from '../../engine/stage.js';
 import { artThumb } from '../../art/render.js';
-import { defaultOptions } from '../sample.js';
 
 const frameCache = new Map();
 
@@ -37,7 +36,6 @@ export function infoFor(b) {
 export async function chooseFrame(b) {
   const t = b.theme;
   const s = b.session;
-  s.options = defaultOptions(t);
   const { main, foot, timer } = b.show({ step: 'frame', title: '选择相框', sub: 'CHOOSE YOUR FRAME', timer: t.selectTime || 60 });
   let layout = t.layouts[0];
   let frame = t.frames.find((f) => fits(f, layout)) || t.frames[0];

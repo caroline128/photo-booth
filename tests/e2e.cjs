@@ -79,21 +79,22 @@ async function run() {
       await page.locator('.token').last().click({ timeout: 3000, force: true }).catch(() => {});
       await page.waitForTimeout(300);
     }
+    // machine options come first (flash / lens / retouch …), then the frame
+    for (let i = 0; i < 4; i++) {
+      await page.waitForSelector('.option-step, .frame-step', { timeout: 20000 });
+      if (!(await page.$('.option-step'))) break;
+      await shot(`${id}-03-option-${i}`);
+      await page.locator('.option-card').last().click();
+      await page.click('.screen-foot .btn.primary');
+      await page.waitForTimeout(600);
+    }
     // frame
-    await page.waitForSelector('.frame-step', { timeout: 8000 });
+    await page.waitForSelector('.frame-step', { timeout: 20000 });
     await page.waitForTimeout(600);
     if ((await page.locator('.frame-card').count()) > 1) await page.locator('.frame-card').nth(1).click();
     await page.waitForTimeout(300);
-    await shot(`${id}-03-frame`);
+    await shot(`${id}-04-frame`);
     await page.click('.screen-foot .btn.primary');
-    // options (0..n)
-    for (let i = 0; i < 4; i++) {
-      await page.waitForTimeout(500);
-      if (!(await page.$('.option-step'))) break;
-      await shot(`${id}-04-option-${i}`);
-      await page.locator('.option-card').last().click();
-      await page.click('.screen-foot .btn.primary');
-    }
     // camera / props
     await page.waitForSelector('.prep, .modal', { timeout: 40000 });
     if (await page.$('.modal')) {

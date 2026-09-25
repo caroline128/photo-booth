@@ -21,6 +21,12 @@ async function toPrep(page, id) {
     else await page.click('.coin-side .btn').catch(() => {});
     await page.waitForTimeout(260);
   }
+  for (let i = 0; i < 4; i++) {
+    await page.waitForSelector('.option-step, .frame-step', { timeout: 20000 });
+    if (!(await page.$('.option-step'))) break;
+    await page.click('.screen-foot .btn.primary');
+    await page.waitForTimeout(500);
+  }
   await page.waitForSelector('.frame-step');
   await page.waitForTimeout(500);
 }
@@ -43,11 +49,6 @@ async function snap(page, name) {
   await toPrep(page, 'kpop');
   await snap(page, 'kpop-frame.jpg');
   await page.click('.screen-foot .btn.primary');
-  for (let i = 0; i < 4; i++) {
-    await page.waitForTimeout(500);
-    if (!(await page.$('.option-step'))) break;
-    await page.click('.screen-foot .btn.primary');
-  }
   // camera is denied (no fake-ui flag) → pick the demo cat
   await page.waitForSelector('.modal .btn.primary', { timeout: 15000 });
   await page.click('.modal .btn.primary');

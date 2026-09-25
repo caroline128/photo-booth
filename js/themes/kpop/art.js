@@ -865,6 +865,7 @@ export const layouts = [
     ...stripLayout({ id: 'strip', name: '人生四格竖条', n: 4, W: 600, H: 1800, side: 36, top: 44, gap: 20, bottom: 250, aspect: 4 / 3, shape: 'round', r: 10 }),
     desc: '2×6 英寸 · 一次打印两条',
     sheet: 'strip-pair',
+    paperName: '2×6 竖条',
   },
   {
     ...gridLayout({ id: 'multi', name: 'MULTI 四宫格', cols: 2, rows: 2, W: 1200, H: 1800, pad: 56, gap: 28, top: 90, bottom: 290, aspect: 0.76, shape: 'round', r: 14 }),
@@ -874,6 +875,7 @@ export const layouts = [
     id: 'photocard',
     name: '偶像小卡',
     desc: '55×85mm 小卡 · 从 8 张里挑 1 张',
+    paperName: '55×85mm 小卡',
     size: [650, 1004],
     photos: 1,
     slots: [{ x: 38, y: 38, w: 574, h: 766, shape: 'round', r: 30 }],

@@ -56,13 +56,14 @@ const dataUrl = 'data:image/jpeg;base64,' + fs.readFileSync(imgPath).toString('b
     else await page.click('.coin-side .btn').catch(() => {});
     await page.waitForTimeout(250);
   }
-  await page.waitForSelector('.frame-step');
-  await page.click('.screen-foot .btn.primary');
   for (let i = 0; i < 4; i++) {
-    await page.waitForTimeout(500);
+    await page.waitForSelector('.option-step, .frame-step', { timeout: 20000 });
     if (!(await page.$('.option-step'))) break;
     await page.click('.screen-foot .btn.primary');
+    await page.waitForTimeout(500);
   }
+  await page.waitForSelector('.frame-step');
+  await page.click('.screen-foot .btn.primary');
   await page.waitForSelector('.prep', { timeout: 20000 });
   const n = await page.locator('.prop-card').count();
   const pickProps = (process.env.PROPS || '0,2,5').split(',').map(Number).filter((k) => k < n);
