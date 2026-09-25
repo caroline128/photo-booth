@@ -273,6 +273,7 @@ export class Booth {
     hush();
     setSubtitleSink(null);
     window.removeEventListener('keydown', this._key);
+    this.session.deco?.destroy(); // window listener + ResizeObserver
     for (const fn of this.cleanups) fn();
   }
 }

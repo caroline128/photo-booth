@@ -105,6 +105,8 @@ export class Shop {
 
   async renderWall() {
     const items = await wall.list();
+    for (const u of this.wallUrls || []) URL.revokeObjectURL(u);
+    this.wallUrls = [];
     this.wallGrid.innerHTML = '';
     if (!items.length) {
       this.wallGrid.append(h('p.wall-empty', '还没有照片～ 拍完点「贴到照片墙」就会出现在这里。'));
@@ -112,6 +114,7 @@ export class Shop {
     }
     for (const it of items.slice(0, 24)) {
       const url = URL.createObjectURL(it.blob);
+      this.wallUrls.push(url);
       const img = h('img', { src: url, alt: `${it.name} 的照片` });
       const pin = h(
         'figure.pin',
@@ -141,6 +144,7 @@ export class Shop {
 
   destroy() {
     this.unsub.forEach((f) => f());
+    for (const u of this.wallUrls || []) URL.revokeObjectURL(u);
   }
 }
 
