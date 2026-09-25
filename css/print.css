@@ -1,0 +1,317 @@
+/* ---------------------------------------------------------------------------
+   Print-out scene (paper coming out of the slot) and the photo viewer
+   ------------------------------------------------------------------------- */
+
+.print-scene {
+  --pw: min(440px, 78vw, calc(58vh / var(--ratio, 1.5)));
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 26px 16px 30px;
+  overflow: auto;
+  background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--body) 45%, #000), #0d0a0c 70%);
+  animation: fadein 0.35s;
+}
+
+.print-scene.leaving {
+  animation: fadeout 0.35s forwards;
+}
+
+.out-machine {
+  display: grid;
+  justify-items: center;
+  padding: 16px 26px 0;
+  border-radius: 22px 22px 8px 8px;
+  border: 4px solid var(--trim);
+  border-bottom: 0;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.1), transparent 15%, transparent 85%, rgba(0, 0, 0, 0.2)),
+    var(--body);
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.out-label {
+  display: grid;
+  justify-items: center;
+  font-family: var(--font-display);
+  font-size: 26px;
+  color: #fff;
+  text-shadow: 0 0 10px var(--glow);
+}
+
+.out-label small {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  opacity: 0.85;
+}
+
+.out-slot {
+  display: grid;
+  justify-items: center;
+  width: calc(var(--pw) + 60px);
+}
+
+.out-slot .mouth {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: calc(var(--pw) + 30px);
+  height: 22px;
+  margin-top: 12px;
+  border-radius: 11px;
+  background: #050505;
+  box-shadow: inset 0 4px 8px rgba(255, 255, 255, 0.08), 0 3px 0 rgba(255, 255, 255, 0.35);
+}
+
+.out-track {
+  position: relative;
+  z-index: 1;
+  width: var(--pw);
+  height: calc(var(--pw) * var(--ratio, 1.5) + 24px);
+  margin-top: -11px;
+  overflow: hidden;
+}
+
+.out-paper {
+  position: relative;
+  width: var(--pw);
+  aspect-ratio: 1 / var(--ratio);
+  transform: translateY(-101%);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+}
+
+.out-paper img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.out-paper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.35) 50%, transparent 65%) -150% 0 / 300% 100% no-repeat;
+  pointer-events: none;
+}
+
+.out-paper.feeding {
+  animation: feed 3.2s steps(26, end) forwards;
+}
+
+.out-paper[data-kind="chemical"].feeding {
+  animation-duration: 2.6s;
+}
+
+.out-paper.out {
+  animation: dropout 0.55s cubic-bezier(0.3, 1.6, 0.5, 1) forwards;
+}
+
+.out-paper.out::after {
+  animation: gloss 1.4s 0.3s forwards;
+}
+
+@keyframes feed {
+  from {
+    transform: translateY(-101%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes dropout {
+  from {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(14px) rotate(-1.5deg);
+  }
+  to {
+    transform: translateY(10px) rotate(1deg);
+  }
+}
+
+.out-paper .wet {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.45), transparent 40%),
+    linear-gradient(180deg, rgba(160, 200, 220, 0.25), rgba(255, 255, 255, 0.05));
+  pointer-events: none;
+}
+
+.out-paper[data-kind="chemical"] img {
+  filter: brightness(1.9) contrast(0.2) saturate(0) blur(1.5px);
+}
+
+.out-paper.developing img {
+  animation: develop 3.2s ease-in forwards;
+}
+
+.out-paper.developing .wet {
+  animation: wet 7s forwards;
+}
+
+@keyframes develop {
+  from {
+    filter: brightness(1.9) contrast(0.2) saturate(0) blur(1.5px);
+  }
+  to {
+    filter: none;
+  }
+}
+
+@keyframes wet {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.out-hint {
+  margin: 0;
+  color: #fff;
+  font-family: var(--font-ui);
+  font-size: 18px;
+  text-align: center;
+}
+
+/* ---------------------------------------------------------------- viewer */
+
+.viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 160;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  background:
+    repeating-linear-gradient(92deg, rgba(0, 0, 0, 0.05) 0 3px, transparent 3px 11px),
+    repeating-linear-gradient(88deg, rgba(255, 255, 255, 0.04) 0 2px, transparent 2px 17px),
+    linear-gradient(135deg, #8a5a36, #5e3a22);
+  animation: fadein 0.35s;
+}
+
+.viewer-table {
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  perspective: 1600px;
+  container-type: size;
+}
+
+.v-card {
+  width: min(88cqw, calc(88cqh / var(--ratio)));
+  aspect-ratio: 1 / var(--ratio);
+  cursor: pointer;
+  animation: land 0.7s cubic-bezier(0.2, 1.2, 0.4, 1);
+}
+
+@keyframes land {
+  from {
+    transform: translateY(-40px) rotate(-8deg) scale(1.1);
+    opacity: 0;
+  }
+}
+
+.v-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transform: rotate(-2deg);
+  transition: transform 0.8s cubic-bezier(0.4, 0.2, 0.2, 1);
+}
+
+.v-card.flipped .v-inner {
+  transform: rotate(-2deg) rotateY(180deg);
+}
+
+.v-front,
+.v-back {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 2px;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.3), 0 18px 36px rgba(0, 0, 0, 0.45);
+}
+
+.v-back {
+  transform: rotateY(180deg);
+}
+
+.v-card[data-sheet="sticker"] .v-front {
+  border-radius: 10px;
+}
+
+.viewer-side {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 26px 22px;
+  background: var(--paper);
+  color: var(--ink);
+  border-left: 4px solid var(--ink);
+  overflow: auto;
+}
+
+.viewer-side h3 {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 26px;
+}
+
+.viewer-side p {
+  margin: 0 0 6px;
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+
+.viewer .btn {
+  --b: #fff;
+  --bt: var(--ink);
+  width: 100%;
+}
+
+.viewer .btn.primary {
+  --b: var(--mustard);
+}
+
+.viewer-end {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.saved-note {
+  font-size: 13px;
+  color: var(--teal);
+}
+
+@media (max-width: 800px) {
+  .viewer {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+  .viewer-table {
+    padding: 16px;
+  }
+  .viewer-side {
+    border-left: 0;
+    border-top: 4px solid var(--ink);
+    padding: 14px 16px 20px;
+    max-height: 48vh;
+  }
+}

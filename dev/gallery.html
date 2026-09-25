@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Theme Gallery (dev)</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Bungee&family=Caveat:wght@400;700&family=Limelight&family=Noto+Sans+SC:wght@400;700;900&family=Rubik+Mono+One&family=Special+Elite&family=ZCOOL+KuaiLe&family=Black+Han+Sans&family=Jua&family=Bangers&family=Permanent+Marker&family=Mochiy+Pop+One&family=Pacifico&family=VT323&family=Press+Start+2P&family=ZCOOL+QingKe+HuangYou&family=Dela+Gothic+One&family=DotGothic16&family=Rampart+One&display=swap"
+    />
+    <style>
+      body { margin: 0; padding: 20px; font-family: "Noto Sans SC", sans-serif; background: #2b2b33; color: #eee; }
+      h1, h2 { font-family: "ZCOOL KuaiLe", sans-serif; }
+      h2 { margin: 28px 0 10px; border-bottom: 1px solid #555; padding-bottom: 6px; }
+      .grid { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; }
+      figure { margin: 0; padding: 8px; background: repeating-conic-gradient(#bbb 0 25%, #eee 0 50%) 0 0 / 16px 16px; border-radius: 8px; text-align: center; }
+      figure.dark { background: #1b1b1f; }
+      figcaption { font-size: 12px; color: #222; background: #fff; border-radius: 4px; margin-top: 4px; padding: 2px 4px; }
+      img, canvas { display: block; max-width: 100%; }
+      .frames img { height: 520px; width: auto; }
+      .small img { height: 150px; width: auto; }
+      .err { color: #ff8a8a; white-space: pre-wrap; }
+    </style>
+  </head>
+  <body>
+    <h1 id="title">Gallery</h1>
+    <div id="out"></div>
+    <script type="module" src="../js/dev/gallery.js"></script>
+  </body>
+</html>

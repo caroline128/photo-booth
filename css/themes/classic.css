@@ -1,0 +1,38 @@
+/* Machine shell touches for .theme-classic — chrome, rivets, sepia CRT. */
+
+.theme-classic .cabinet {
+  background:
+    radial-gradient(circle at 14px 14px, #eef0f2 3px, #8d949b 4px, transparent 5px) 0 0 / 100% 100% no-repeat,
+    radial-gradient(circle at calc(100% - 14px) 14px, #eef0f2 3px, #8d949b 4px, transparent 5px) 0 0 / 100% 100% no-repeat,
+    linear-gradient(90deg, rgba(255, 255, 255, 0.14), transparent 10%, transparent 90%, rgba(0, 0, 0, 0.22)),
+    var(--body);
+}
+
+.theme-classic .marquee {
+  background: linear-gradient(#f4f5f7, #a9b0b7);
+  border-color: #6c737a;
+}
+
+.theme-classic .marquee h1 {
+  color: #9e1f1f;
+  text-shadow: 0 1px 0 #fff, 0 0 12px rgba(255, 210, 120, 0.7);
+}
+
+.theme-classic .marquee small {
+  color: #3a332d;
+}
+
+.theme-classic .screen-wrap {
+  background:
+    radial-gradient(ellipse at center, rgba(255, 220, 160, 0.06), transparent 70%),
+    var(--screen);
+}
+
+.theme-classic .screen-title b,
+.theme-classic .attract-title {
+  font-family: "Limelight", "ZCOOL KuaiLe", serif;
+}
+
+.theme-classic .stage-view {
+  filter: sepia(0.15);
+}
