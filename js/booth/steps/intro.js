@@ -10,7 +10,7 @@ export async function attract(b) {
   const t = b.theme;
   const { main } = b.show({ step: null, cls: 'is-attract' });
   const sample = h('img.attract-sample', { alt: `${t.name} 样张` });
-  samplePrint(t, { width: 420 }).then((url) => (sample.src = url));
+  samplePrint(t).then((url) => (sample.src = url));
   const press = h('button.press', { type: 'button' }, h('span', 'TOUCH TO START'), h('small', '点击屏幕开始'));
   main.append(
     h(

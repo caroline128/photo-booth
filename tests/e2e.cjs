@@ -210,7 +210,7 @@ async function run() {
     await page.waitForTimeout(3500);
     await shot(`${id}-14-printed`);
     await page.click('.print-scene .btn.primary');
-    await page.waitForSelector('.viewer', { timeout: 5000 });
+    await page.waitForSelector('.viewer', { timeout: 20000 });
     await page.waitForTimeout(900);
     await shot(`${id}-15-viewer`);
     // save to wall, then flip

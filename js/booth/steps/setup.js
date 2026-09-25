@@ -29,7 +29,9 @@ function framePreview(theme, layout, frame, info, width = 420) {
 
 export function infoFor(b) {
   const s = b.session;
-  return { theme: b.theme, date: s.date, serial: s.serial, options: s.options, captions: s.captions };
+  // before the caption step, previews show the machine's sample captions
+  const captions = s.captions?.length ? s.captions : b.theme.sampleCaptions || [];
+  return { theme: b.theme, date: s.date, serial: s.serial, options: s.options, captions };
 }
 
 export async function chooseFrame(b) {

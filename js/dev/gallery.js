@@ -33,7 +33,7 @@ async function main() {
   const session = { options: defaultOptions(t) };
 
   // sample print as shown in the lobby
-  const sample = h('img', { src: await samplePrint(t, { width: 360 }) });
+  const sample = h('img', { src: await samplePrint(t) });
   section('Lobby sample (demo cat)', fig(sample, 'samplePrint'));
 
   // props on the mannequin + demo cat

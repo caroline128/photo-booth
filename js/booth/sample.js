@@ -10,8 +10,13 @@ import { ensureFonts, themeText } from '../core/fonts.js';
 
 const cache = new Map();
 
-export function samplePrint(theme, { width = 360 } = {}) {
+// One render per machine, sharp enough for both the lobby cabinet and the
+// attract screen (it is only ever scaled down).
+const SAMPLE_WIDTH = 480;
+
+export function samplePrint(theme) {
   if (cache.has(theme.id)) return cache.get(theme.id);
+  const width = SAMPLE_WIDTH;
   const p = (async () => {
     await ensureFonts(theme.fonts?.load || [], themeText(theme));
     const layout = theme.layouts[0];

@@ -77,7 +77,7 @@ export class Shop {
 
   cabinet(t, i) {
     const sample = h('img.c-sample', { alt: `${t.name} 样张`, loading: 'lazy' });
-    samplePrint(t, { width: 240 }).then((u) => (sample.src = u));
+    samplePrint(t).then((u) => (sample.src = u));
     const el = h(
       `button.cab.m-${t.id}`,
       {
