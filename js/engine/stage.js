@@ -137,7 +137,9 @@ export class Stage {
     const ctx = out.getContext('2d');
     const cr = this.crop(w, h);
     const el = this.source.el;
-    const mask = this.background && this.source.kind === 'camera' ? segmenter.update(el) : null;
+    let mask = this.background && this.source.kind === 'camera' ? segmenter.update(el) : null;
+    // nobody found (bad light / empty frame): show the camera rather than an empty backdrop
+    if (mask && segmenter.coverage < 0.015) mask = null;
     const bgActive = this.background && (mask || this.source.kind === 'demo');
     ctx.save();
     ctx.clearRect(0, 0, w, h);

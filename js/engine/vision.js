@@ -180,6 +180,7 @@ class Segmenter {
     this.state = 'idle';
     this.seg = null;
     this.mask = null; // canvas whose alpha = person confidence
+    this.coverage = 0;
     this.last = 0;
     this.lastTs = 0;
   }
@@ -225,14 +226,17 @@ class Segmenter {
           this.img = this.mctx.createImageData(w, h);
         }
         const px = this.img.data;
+        let sum = 0;
         for (let i = 0, j = 3; i < data.length; i++, j += 4) {
           // tighten the soft edge a little so hair keeps its shape
           const v = clamp((data[i] - 0.25) / 0.5, 0, 1);
+          sum += v;
           px[j - 3] = 255;
           px[j - 2] = 255;
           px[j - 1] = 255;
           px[j] = v * 255;
         }
+        this.coverage = sum / data.length; // share of the frame that is "person"
         this.mctx.putImageData(this.img, 0, 0);
       });
     } catch (e) {
