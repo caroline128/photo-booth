@@ -78,8 +78,11 @@ tests/              Playwright 端到端测试和截图脚本
 npm install                         # 安装 Playwright（只有测试需要）
 npm start                           # 本地服务器
 node tests/e2e.cjs classic kpop     # 用 Chromium 假摄像头把指定机器从头拍到尾，截图存到 test-results/
-node tests/gallery.cjs y2k          # 截图某台机器的全部素材
+DEMO=1 node tests/e2e.cjs meme      # 拒绝摄像头权限，走「店猫演示模式」
+node tests/gallery.cjs y2k          # 截图某台机器的全部素材（道具会戴在人形假人和店猫上）
 ```
+
+`tests/e2e.cjs` 还支持 `NOFONTS=1`（网络不稳时跳过网页字体）和 `JPEG=1`（输出体积更小的截图）。
 
 新增一台机器：复制 `js/themes/classic/`，按 [docs/THEME_API.md](docs/THEME_API.md) 改配置和素材，再把 id 加到 `js/themes/index.js`。
 
