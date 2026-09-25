@@ -13,8 +13,8 @@ export const props = [
     id: 'fedora',
     name: '绅士礼帽',
     anchor: 'head',
-    w: 3.1,
-    dy: -0.12,
+    w: 3.3,
+    dy: 0.02,
     origin: [0.5, 0.9],
     svg: svg(240, 130, `
       <path d="M52 100 C52 62 64 26 90 20 C106 16 112 32 120 32 C128 32 134 16 150 20 C176 26 188 62 188 100 Z" fill="#3b332e"/>
@@ -27,8 +27,8 @@ export const props = [
     id: 'tophat',
     name: '魔术高帽',
     anchor: 'head',
-    w: 2.5,
-    dy: -0.12,
+    w: 2.7,
+    dy: 0.02,
     origin: [0.5, 0.93],
     svg: svg(200, 190, `
       <path d="M52 20 L148 20 L142 164 L58 164 Z" fill="#1d1b1e"/>

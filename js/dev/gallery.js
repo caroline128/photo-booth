@@ -3,7 +3,7 @@
 // checked at a glance.  Open dev/gallery.html?theme=<id>
 
 import { h, canvas as mkCanvas } from '../core/util.js';
-import { ensureFonts } from '../core/fonts.js';
+import { ensureFonts, themeText } from '../core/fonts.js';
 import { artBitmap } from '../art/render.js';
 import { Stage } from '../engine/stage.js';
 import { createDemoSource } from '../engine/camera.js';
@@ -27,7 +27,7 @@ const img = (c, height) => {
 async function main() {
   const t = (await import(`../themes/${id}/index.js`)).default;
   document.getElementById('title').textContent = `${t.name} · ${t.title} (${t.id})`;
-  await ensureFonts(t.fonts?.load || []);
+  await ensureFonts(t.fonts?.load || [], themeText(t));
   await document.fonts.ready;
   const session = { options: defaultOptions(t) };
 

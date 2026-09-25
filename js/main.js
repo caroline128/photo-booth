@@ -2,7 +2,7 @@
 
 import { h } from './core/util.js';
 import { unlockAudio } from './core/audio.js';
-import { THEMES, themeById } from './themes/index.js';
+import { THEMES, themeById, loadThemes } from './themes/index.js';
 import { Shop } from './shop/shop.js';
 import { Booth } from './booth/booth.js';
 
@@ -59,4 +59,5 @@ window.addEventListener('hashchange', route);
 const unlock = () => unlockAudio();
 window.addEventListener('pointerdown', unlock, { once: true });
 window.addEventListener('keydown', unlock, { once: true });
+await loadThemes();
 route();

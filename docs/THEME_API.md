@@ -23,7 +23,7 @@ css/themes/<id>.css       机器外壳的主题化样式（选择器以 .theme-<
 | `badge` / `screenText` | 大厅机器角标 / 机身小屏幕文字 |
 | `lang` / `voice {pitch, rate}` | 机器语音语言（SpeechSynthesis），字幕总是中文 |
 | `colors` | CSS 变量：`body trim accent curtain screen screenText glow btn btnText card cardBorder` |
-| `fonts` | `{ display, ui, load: [...] }`，`load` 里是要预加载的 Google Fonts 字体名 |
+| `fonts` | `{ display, ui, load: [...], text }`：`load` 是要预加载的 Google Fonts 字体名；`text` 写上相框/贴纸里用 canvas 画的**所有中日韩文字**（中文字体按字符分包下载，没预载的字会先用系统字体画出来） |
 | `bgm` | `{ style: 'lounge'|'kpop'|'hiphop'|'eurobeat'|'chip'|'bounce', key: midi, prog: [半音偏移...], minor? }` |
 | `lines` | 语音台词：`attract insert paid choose camera props ready cheese done check pick retake filter decorate hurry timeup review print bye`；值为字符串、`{text, lang, sub}` 或数组（随机取） |
 | `shoot` | `{ shots, firstCountdown, countdown, retakes: 1, poses: [{text, icon, sub, line?}], skipLabel? }` |
@@ -39,8 +39,10 @@ css/themes/<id>.css       机器外壳的主题化样式（选择器以 .theme-<
 | `textStyles[]` | 文字贴纸样式：`{ name, font, color, stroke, strokeWidth, gradient, outline, outlineColor, chip }` |
 | `phrases[]` | 文字页签里的常用语 |
 | `pens[]` / `penColors[]` | 画笔：`{ pen, name, width }`，`pen` 取值 `solid neon double glitter hearts stars dots spray chalk rainbow` |
-| `captions` | 可选，开启「配字」步骤：`{ title, presets: [...], max }`，结果在 `info.captions[i]` |
+| `captions` | 可选，开启「配字」步骤：`{ title, lead, presets: [...], max, font }`，结果在 `info.captions[i]`；`font` 是相框画配字用的 canvas font 字符串（用来预载用户输入的字） |
+| `decoBooth` | 可选，拍完后显示「请移动到涂鸦台」过场：`{ title, text, sub, icon }`（台词键 `move`） |
 | `print` | `{ kind: 'dyesub'|'chemical', sheet: 'single'|'strip-pair'|'sticker', copies, paperName, backColor }` |
+| （版式可用 `sheet` 字段覆盖，比如只有竖条版式打印成两条） | |
 | `placeholderTint` | 选框页占位剪影的两种底色 |
 
 ## 2. 道具（AR，跟着脸走）
@@ -70,7 +72,7 @@ css/themes/<id>.css       机器外壳的主题化样式（选择器以 .theme-<
   outline: 0.05, outlineColor: '#fff', shadow, holo }  // 白色裁切边 / 镭射
 ```
 
-需要网页字体的文字贴纸用 `textSticker({...})`（`js/art/kit.js`）或 canvas `draw`，因为 SVG 放进 `<img>` 后读不到网页字体。常用图形：`heartD starD sparkleD burstD circleD`。
+需要网页字体的文字贴纸用 `textSticker({...})`（`js/art/kit.js`，会自动预载字形）或 canvas `draw`，因为 SVG 放进 `<img>` 后读不到网页字体。自己写 `draw` 画文字时，加上 `fontSpec: { font: '400 100px "Jua"', text: '要画的字' }`，渲染前会先下载这些字形。常用图形：`heartD starD sparkleD burstD circleD`。
 
 ## 4. 版式与相框
 

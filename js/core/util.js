@@ -131,16 +131,21 @@ export function countdown(seconds, onTick) {
   return p;
 }
 
+/** Save a Blob as a file. */
+export function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = h('a', { href: url, download: filename });
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
 /** Download a canvas as PNG. */
 export function downloadCanvas(cnv, filename) {
   return new Promise((resolve) => {
     cnv.toBlob((blob) => {
-      const url = URL.createObjectURL(blob);
-      const a = h('a', { href: url, download: filename });
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      downloadBlob(blob, filename);
       resolve();
     }, 'image/png');
   });

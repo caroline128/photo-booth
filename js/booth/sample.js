@@ -6,12 +6,14 @@ import { createDemoSource } from '../engine/camera.js';
 import { Stage } from '../engine/stage.js';
 import { compose, slotAspect } from '../engine/compose.js';
 import { offlineFx, renderToCanvas } from '../engine/glfx.js';
+import { ensureFonts, themeText } from '../core/fonts.js';
 
 const cache = new Map();
 
 export function samplePrint(theme, { width = 360 } = {}) {
   if (cache.has(theme.id)) return cache.get(theme.id);
   const p = (async () => {
+    await ensureFonts(theme.fonts?.load || [], themeText(theme));
     const layout = theme.layouts[0];
     const frame = theme.frames.find((f) => !f.layouts || f.layouts.includes(layout.id)) || theme.frames[0];
     const demo = createDemoSource({ animate: false });

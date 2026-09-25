@@ -1,12 +1,19 @@
 // Machine registry — one theme module per photo booth in the shop.
+// Themes load independently: a machine that fails to load is left out of
+// the shop (and logged) instead of taking the whole app down.
 
-import classic from './classic/index.js';
-import kpop from './kpop/index.js';
-import fisheye from './fisheye/index.js';
-import y2k from './y2k/index.js';
-import ccd from './ccd/index.js';
-import meme from './meme/index.js';
+const IDS = ['classic', 'kpop', 'fisheye', 'y2k', 'ccd', 'meme'];
 
-export const THEMES = [classic, kpop, fisheye, y2k, ccd, meme];
+export const THEMES = [];
+
+export async function loadThemes() {
+  const results = await Promise.allSettled(IDS.map((id) => import(`./${id}/index.js`)));
+  THEMES.length = 0;
+  results.forEach((r, i) => {
+    if (r.status === 'fulfilled') THEMES.push(r.value.default);
+    else console.error(`[themes] "${IDS[i]}" failed to load`, r.reason);
+  });
+  return THEMES;
+}
 
 export const themeById = (id) => THEMES.find((t) => t.id === id);

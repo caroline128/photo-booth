@@ -72,6 +72,7 @@ export function textSticker(opts) {
   let dims = null;
   const def = {
     id: opts.id,
+    fontSpec: { font, text: opts.text },
     name: opts.name || opts.text,
     group: opts.group,
     size: opts.size,

@@ -7,9 +7,12 @@
 //     shadow?: true, holo?: true }
 
 import { canvas as mkCanvas, loadImage, svgUrl, TAU } from '../core/util.js';
+import { ensureText } from '../core/fonts.js';
 
-const imgCache = new Map();
-const bmpCache = new Map();
+// Caches are keyed by the definition object itself (not its id), so two
+// machines can both have a sticker called "heart" without clashing.
+const imgCache = new WeakMap();
+const bmpCache = new WeakMap(); // def -> Map(width -> Promise<canvas>)
 
 export function artRatio(def) {
   if (def.ratio) return def.ratio;
@@ -41,6 +44,8 @@ async function svgImage(def) {
 
 /** Raw art (no border) at `w` px wide. */
 async function rawArt(def, w) {
+  // make sure the exact glyphs of text art are downloaded before measuring/drawing
+  if (def.fontSpec) await ensureText(def.fontSpec.font, def.fontSpec.text);
   const ratio = artRatio(def);
   const c = mkCanvas(w, w * ratio);
   const ctx = c.getContext('2d');
@@ -105,8 +110,9 @@ export function dieCut(src, pad, color = '#fff', shadow = true) {
  */
 export async function artBitmap(def, w) {
   w = Math.max(8, Math.round(w));
-  const key = `${def.id}@${w}`;
-  if (bmpCache.has(key)) return bmpCache.get(key);
+  let sizes = bmpCache.get(def);
+  if (!sizes) bmpCache.set(def, (sizes = new Map()));
+  if (sizes.has(w)) return sizes.get(w);
   const p = (async () => {
     const raw = await rawArt(def, w);
     if (!def.outline) {
@@ -115,16 +121,17 @@ export async function artBitmap(def, w) {
     }
     return dieCut(raw, Math.max(2, def.outline * w), def.outlineColor || '#fff', def.shadow !== false);
   })();
-  bmpCache.set(key, p);
-  // keep the cache from growing without bound during long decorate sessions
-  if (bmpCache.size > 400) bmpCache.delete(bmpCache.keys().next().value);
+  sizes.set(w, p);
+  // stickers get resized a lot while decorating: keep only a few sizes per art
+  if (sizes.size > 8) sizes.delete(sizes.keys().next().value);
   return p;
 }
 
 /** Data URL thumbnail for palettes (cached). */
-const thumbCache = new Map();
+const thumbCache = new WeakMap();
 export async function artThumb(def, w = 160) {
-  const key = `${def.id}@${w}`;
-  if (!thumbCache.has(key)) thumbCache.set(key, artBitmap(def, w).then((c) => c.toDataURL('image/png')));
-  return thumbCache.get(key);
+  let sizes = thumbCache.get(def);
+  if (!sizes) thumbCache.set(def, (sizes = new Map()));
+  if (!sizes.has(w)) sizes.set(w, artBitmap(def, w).then((c) => c.toDataURL('image/png')));
+  return sizes.get(w);
 }

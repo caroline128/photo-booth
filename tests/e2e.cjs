@@ -18,12 +18,21 @@ fs.mkdirSync(OUT, { recursive: true });
 async function run() {
   const browser = await chromium.launch({
     executablePath: process.env.CHROME || undefined,
-    args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream', '--autoplay-policy=no-user-gesture-required', '--enable-webgl', '--ignore-gpu-blocklist', '--use-angle=swiftshader'],
+    args: [
+      // DEMO=1: no auto-accept, so the camera request is denied and the demo cat steps in
+      ...(process.env.DEMO ? [] : ['--use-fake-ui-for-media-stream']),
+      '--use-fake-device-for-media-stream',
+      '--autoplay-policy=no-user-gesture-required',
+      '--enable-webgl',
+      '--ignore-gpu-blocklist',
+      '--use-angle=swiftshader',
+    ],
   });
   const context = await browser.newContext({
     viewport: { width: W, height: H },
     permissions: process.env.DEMO ? [] : ['camera'],
     deviceScaleFactor: 1,
+    ignoreHTTPSErrors: true, // web fonts come through the sandbox proxy
   });
   const page = await context.newPage();
   const errors = [];
@@ -31,9 +40,14 @@ async function run() {
   page.on('console', (m) => {
     if (m.type() === 'error' || m.type() === 'warning') errors.push(`${m.type()}: ${m.text()}`);
   });
+  if (process.env.NOFONTS) await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
   const shot = async (name) => {
-    await page.screenshot({ path: path.join(OUT, `${name}.png`) });
-    console.log('  📸', name);
+    try {
+      await page.screenshot({ path: path.join(OUT, `${name}.png`), timeout: 45000 });
+      console.log('  📸', name);
+    } catch (e) {
+      console.log('  ⚠️ screenshot failed', name, e.message.split('\n')[0]);
+    }
   };
 
   await page.goto(BASE + '/#/');

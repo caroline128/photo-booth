@@ -6,12 +6,12 @@
 import { h, sleep, pick } from '../core/util.js';
 import { store } from '../core/store.js';
 import { sfx, say, playBgm, stopBgm, setSubtitleSink, hush } from '../core/audio.js';
-import { ensureFonts } from '../core/fonts.js';
+import { ensureFonts, themeText } from '../core/fonts.js';
 import { stepTimer, modal } from './ui.js';
 import { attract, coin } from './steps/intro.js';
 import { chooseFrame, chooseOptions, prep } from './steps/setup.js';
 import { shoot, pickAndRetake } from './steps/shoot.js';
-import { chooseFilter, captions, decorate, review, printOut } from './steps/finish.js';
+import { chooseFilter, captions, moveToDecoBooth, decorate, review, printOut } from './steps/finish.js';
 
 export const EXIT = Symbol('exit');
 
@@ -109,6 +109,16 @@ export class Booth {
     });
     this._key = (e) => {
       if (e.key === 'Escape') this.confirmExit();
+      // Enter = the machine's big OK button, unless typing or focused on a control
+      if (e.key === 'Enter' && !e.repeat) {
+        const tag = document.activeElement?.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'BUTTON' || this.el.querySelector('.modal-wrap')) return;
+        const ok = this.el.querySelector('.print-scene .btn.primary:not([hidden]), .screen-foot .btn.primary:not(:disabled)');
+        if (ok) {
+          e.preventDefault();
+          ok.click();
+        } else if (this.screenEl.classList.contains('is-attract')) this.screenEl.querySelector('.screen-main')?.click();
+      }
     };
     window.addEventListener('keydown', this._key);
     return el;
@@ -175,7 +185,7 @@ export class Booth {
   // ------------------------------------------------------------------ flow
   async run() {
     const t = this.theme;
-    await ensureFonts(t.fonts?.load || []);
+    await ensureFonts(t.fonts?.load || [], themeText(t));
     playBgm(t.bgm);
     try {
       await attract(this);
@@ -189,6 +199,7 @@ export class Booth {
       await chooseFilter(this);
       if (t.captions) await captions(this);
       for (const step of t.extraSteps || []) await step(this);
+      if (t.decoBooth) await moveToDecoBooth(this);
       let again = true;
       while (again) {
         await decorate(this);

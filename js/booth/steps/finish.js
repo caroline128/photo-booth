@@ -1,7 +1,7 @@
 // After the shoot: filter → decorate (time-limited 落書き) → review →
 // print (dye-sub passes or chemical developing) → the photo in your hand.
 
-import { h, sleep, canvas as mkCanvas, downloadCanvas, stamp } from '../../core/util.js';
+import { h, sleep, canvas as mkCanvas, downloadCanvas, downloadBlob, stamp } from '../../core/util.js';
 import { sfx } from '../../core/audio.js';
 import { wall } from '../../core/store.js';
 import { btn, stepTimer } from '../ui.js';
@@ -12,6 +12,7 @@ import { PENS } from '../../engine/pens.js';
 import { dyeSubPasses } from '../../engine/printer.js';
 import { artThumb } from '../../art/render.js';
 import { infoFor } from './setup.js';
+import { ensureText } from '../../core/fonts.js';
 
 function renderShot(b, shot, filter, width) {
   const w = width || shot.w;
@@ -101,8 +102,9 @@ export async function captions(b) {
       focused = i;
       inputs.forEach((x, j) => x.parentElement.classList.toggle('on', j === i));
     });
-    input.addEventListener('input', () => {
+    input.addEventListener('input', async () => {
       s.captions[i] = input.value;
+      if (cfg.font) await ensureText(cfg.font, input.value);
       renderPreview();
     });
     const shuffle = h('button.btn.ghost.small', { type: 'button', title: '随机换一句' }, '🎲');
@@ -129,6 +131,24 @@ export async function captions(b) {
   foot.append(btn('配好了 ✓', () => ok(), 'primary big'));
   if (t.lines?.caption) b.say('caption');
   await b.wait(Promise.race([clicked, timer.done]));
+}
+
+// ------------------------------------------------------------------ interlude
+/** Purikura machines send you to a separate doodle booth: theme.decoBooth = { text, sub }. */
+export async function moveToDecoBooth(b) {
+  const cfg = b.theme.decoBooth;
+  const { main } = b.show({ step: 'deco', title: cfg.title || '请移动到涂鸦台', sub: 'MOVE →', cls: 'is-interlude' });
+  main.append(
+    h(
+      'div.interlude',
+      h('div.walk', h('span.walk-icon', cfg.icon || '🚶'), h('span.walk-arrow', '→ → →')),
+      h('p.interlude-text', cfg.text || '拍摄结束！请到旁边的涂鸦台继续～'),
+      cfg.sub ? h('p.interlude-sub', cfg.sub) : null,
+    ),
+  );
+  if (b.theme.lines?.move) b.say('move');
+  sfx.whoosh();
+  await b.wait(Promise.race([sleep(3200), new Promise((r) => main.addEventListener('click', r, { once: true }))]));
 }
 
 // ------------------------------------------------------------------ decorate
@@ -200,11 +220,12 @@ export async function decorate(b) {
     }
   };
   renderStyles();
-  const addText = (text) => {
+  const addText = async (text) => {
     const v = (text ?? input.value).trim();
     if (!v) return;
-    deco.add(textArt(v, style));
     input.value = '';
+    await ensureText(`${style.weight || 400} 100px ${style.font || '"ZCOOL KuaiLe", "Noto Sans SC", sans-serif'}`, v);
+    deco.add(textArt(v, style));
   };
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') addText();
@@ -262,13 +283,35 @@ export async function decorate(b) {
   }
   setTab('sticker');
 
+  // zoom onto single photos, like decorating shot by shot in a purikura booth
+  const zoomBar = h('div.zoom-bar', { role: 'toolbar', 'aria-label': '放大装饰' });
+  const slots = s.layout.slots;
+  const margin = Math.min(base.width, base.height) * 0.06;
+  const views = [{ label: '整张', rect: null }];
+  if (slots.length <= 16) {
+    slots.forEach((sl, i) => {
+      const x = Math.max(0, sl.x - margin);
+      const y = Math.max(0, sl.y - margin);
+      views.push({ label: String(i + 1), rect: { x, y, w: Math.min(base.width, sl.x + sl.w + margin) - x, h: Math.min(base.height, sl.y + sl.h + margin) - y } });
+    });
+  }
+  const setView = (v) => {
+    deco.setView(v.rect);
+    [...zoomBar.children].forEach((c) => c.classList.toggle('seg-on', c.dataset.label === v.label));
+  };
+  if (views.length > 2) {
+    zoomBar.append(h('span.zoom-label', '🔍'));
+    for (const v of views) zoomBar.append(h('button.btn.small', { type: 'button', dataset: { label: v.label }, onclick: () => setView(v) }, v.label));
+  }
+  const tall = base.height / base.width >= 2.5;
+
   const undo = btn('↶ 撤销', () => deco.undo(), 'ghost small');
   const clear = btn('清空', () => deco.clear(), 'ghost small');
-  main.append(h('div.deco-step', h('div.deco-tools', tabs, ...Object.values(panes)), h('div.deco-wrap', deco.el)));
+  main.append(h('div.deco-step', h('div.deco-tools', tabs, ...Object.values(panes)), h(`div.deco-wrap${views.length > 2 ? '.has-zoom' : ''}`, views.length > 2 ? zoomBar : null, deco.el)));
   let ok;
   const clicked = new Promise((r) => (ok = r));
   foot.append(undo, clear, h('span.foot-note', '拖动/双指缩放旋转贴纸 · 选中后可删除'), btn('完成 ✓', () => ok(), 'primary big'));
-  requestAnimationFrame(() => deco.layout());
+  requestAnimationFrame(() => (views.length > 2 ? setView(tall ? views[1] : views[0]) : deco.layout()));
   b.say('decorate');
   const r = await b.wait(Promise.race([clicked, timer.done]));
   if (r === 'timeout') {
@@ -309,8 +352,13 @@ export async function review(b) {
 }
 
 // ------------------------------------------------------------------ print
-function printSheet(theme, final) {
-  if (theme.print?.sheet === 'strip-pair') {
+/** Sheet type: a layout may override the machine default (e.g. only strips print as a pair). */
+function sheetKind(b) {
+  return b.session.layout?.sheet || b.theme.print?.sheet || 'single';
+}
+
+function printSheet(kind, final) {
+  if (kind === 'strip-pair') {
     const c = mkCanvas(final.width * 2, final.height);
     const ctx = c.getContext('2d');
     ctx.drawImage(final, 0, 0);
@@ -356,7 +404,7 @@ export async function printOut(b) {
   const t = b.theme;
   const s = b.session;
   const kind = t.print?.kind || 'dyesub';
-  const sheet = printSheet(t, s.final);
+  const sheet = printSheet(sheetKind(b), s.final);
   s.sheet = sheet;
   s.printed = true;
 
@@ -437,7 +485,7 @@ function printScene(b, sheet, kind) {
       paper.classList.add('developing');
       await sleep(3200);
       hint.textContent = '显影完成！小心，还有点湿～';
-    } else hint.textContent = t.print?.sheet === 'strip-pair' ? '出片啦！一式两条，分给朋友一条吧～' : '出片啦！';
+    } else hint.textContent = sheetKind(b) === 'strip-pair' ? '出片啦！一式两条，分给朋友一条吧～' : '出片啦！';
     take.hidden = false;
     take.focus();
     paper.addEventListener('click', finish, { once: true });
@@ -451,7 +499,7 @@ function viewer(b, sheet) {
   return new Promise((resolve) => {
     const front = h('img.v-front', { src: scaledUrl(sheet, 900, 'image/png'), alt: '照片正面' });
     const back = h('img.v-back', { src: backside(b, 600, (600 * sheet.height) / sheet.width).toDataURL('image/jpeg', 0.9), alt: '照片背面' });
-    const card = h('div.v-card', { dataset: { kind: t.print?.kind || 'dyesub', sheet: t.print?.sheet || 'single' }, style: { '--ratio': sheet.height / sheet.width } }, h('div.v-inner', front, back));
+    const card = h('div.v-card', { dataset: { kind: t.print?.kind || 'dyesub', sheet: sheetKind(b) }, style: { '--ratio': sheet.height / sheet.width } }, h('div.v-inner', front, back));
     const saved = h('span.saved-note');
     const flip = () => {
       card.classList.toggle('flipped');
@@ -467,7 +515,8 @@ function viewer(b, sheet) {
         h('h3', '你的大头贴 ✨'),
         h('p', `${t.name} · No.${String(s.serial).padStart(6, '0')} · ${stamp(s.date)}`),
         btn('⬇ 下载电子版 PNG', () => downloadCanvas(s.final, name), 'primary'),
-        t.print?.sheet === 'strip-pair' ? btn('⬇ 下载整张打印纸', () => downloadCanvas(sheet, name.replace('.png', '-sheet.png')), 'ghost') : null,
+        sheetKind(b) === 'strip-pair' ? btn('⬇ 下载整张打印纸', () => downloadCanvas(sheet, name.replace('.png', '-sheet.png')), 'ghost') : null,
+        s.video ? btn('🎬 下载拍摄花絮视频', () => downloadBlob(s.video, name.replace('.png', `-making-of.${s.videoExt || 'webm'}`)), 'ghost') : null,
         btn('↻ 翻到背面看看', flip, 'ghost'),
         btn('📌 贴到小店照片墙', async (e) => {
           const bt = e.currentTarget;

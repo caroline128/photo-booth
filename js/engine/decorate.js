@@ -23,6 +23,7 @@ export class Decorator {
     this.selected = null;
     this.onChange = onChange || (() => {});
     this.k = 1;
+    this.view = { x: 0, y: 0, w: this.W, h: this.H }; // visible region (print px)
 
     this.baseCv = h('canvas.deco-base');
     this.penCv = h('canvas.deco-pen');
@@ -53,6 +54,12 @@ export class Decorator {
     window.removeEventListener('keydown', this._onKey);
   }
 
+  /** Zoom the board onto a region of the print (null = whole print). */
+  setView(rect) {
+    this.view = rect ? { ...rect } : { x: 0, y: 0, w: this.W, h: this.H };
+    this.layout();
+  }
+
   setMode(mode) {
     this.mode = mode;
     this.el.dataset.mode = mode;
@@ -62,9 +69,10 @@ export class Decorator {
   layout() {
     const r = this.el.getBoundingClientRect();
     if (!r.width || !r.height) return;
-    const s = Math.min(r.width / this.W, r.height / this.H);
-    const dw = Math.floor(this.W * s);
-    const dh = Math.floor(this.H * s);
+    const v = this.view;
+    const s = Math.min(r.width / v.w, r.height / v.h);
+    const dw = Math.floor(v.w * s);
+    const dh = Math.floor(v.h * s);
     this.k = s;
     Object.assign(this.board.style, { width: dw + 'px', height: dh + 'px' });
     const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -72,10 +80,10 @@ export class Decorator {
       c.width = Math.round(dw * dpr);
       c.height = Math.round(dh * dpr);
     }
-    this.pk = (dw * dpr) / this.W;
+    this.pk = (dw * dpr) / v.w;
     const bctx = this.baseCv.getContext('2d');
     bctx.imageSmoothingQuality = 'high';
-    bctx.drawImage(this.base, 0, 0, this.baseCv.width, this.baseCv.height);
+    bctx.drawImage(this.base, v.x, v.y, v.w, v.h, 0, 0, this.baseCv.width, this.baseCv.height);
     this.redrawPen();
     this.stickers.forEach((s) => this.place(s));
   }
@@ -117,13 +125,14 @@ export class Decorator {
   // ---------------------------------------------------------------- stickers
   async add(def, opts = {}) {
     this.snapshot();
-    const base = Math.min(this.W, this.H);
+    const v = this.view;
+    const base = Math.min(v.w, v.h);
     const w = opts.w ?? base * (def.size || 0.3);
     const s = {
       id: uid(),
       def,
-      x: opts.x ?? this.W / 2 + (Math.random() - 0.5) * this.W * 0.3,
-      y: opts.y ?? this.H / 2 + (Math.random() - 0.5) * this.H * 0.3,
+      x: opts.x ?? v.x + v.w / 2 + (Math.random() - 0.5) * v.w * 0.3,
+      y: opts.y ?? v.y + v.h / 2 + (Math.random() - 0.5) * v.h * 0.3,
       w,
       rot: opts.rot ?? (Math.random() - 0.5) * 0.35,
       flip: false,
@@ -168,7 +177,7 @@ export class Decorator {
     Object.assign(s.el.style, {
       width: ew + 'px',
       height: eh + 'px',
-      transform: `translate(${s.x * k - ew / 2}px, ${s.y * k - eh / 2}px) rotate(${s.rot}rad)`,
+      transform: `translate(${(s.x - this.view.x) * k - ew / 2}px, ${(s.y - this.view.y) * k - eh / 2}px) rotate(${s.rot}rad)`,
     });
     s.el.firstChild.style.transform = s.flip ? 'scaleX(-1)' : '';
   }
@@ -194,7 +203,8 @@ export class Decorator {
 
   _toPrint(e) {
     const r = this.board.getBoundingClientRect();
-    return { x: ((e.clientX - r.left) / r.width) * this.W, y: ((e.clientY - r.top) / r.height) * this.H };
+    const v = this.view;
+    return { x: v.x + ((e.clientX - r.left) / r.width) * v.w, y: v.y + ((e.clientY - r.top) / r.height) * v.h };
   }
 
   _bindSticker(s, rotHandle) {
@@ -317,14 +327,20 @@ export class Decorator {
   _drawActive(stroke) {
     const ctx = this.activeCv.getContext('2d');
     ctx.clearRect(0, 0, this.activeCv.width, this.activeCv.height);
+    ctx.save();
+    ctx.translate(-this.view.x * this.pk, -this.view.y * this.pk);
     drawStroke(ctx, stroke, this.pk);
+    ctx.restore();
   }
 
   redrawPen(extra) {
     const ctx = this.penCv.getContext('2d');
     ctx.clearRect(0, 0, this.penCv.width, this.penCv.height);
+    ctx.save();
+    ctx.translate(-this.view.x * this.pk, -this.view.y * this.pk);
     for (const s of this.strokes) drawStroke(ctx, s, this.pk);
     if (extra) drawStroke(ctx, extra, this.pk);
+    ctx.restore();
   }
 
   // ---------------------------------------------------------------- output
@@ -366,9 +382,11 @@ export function textArt(text, style = {}) {
   const pad = fs * 0.35;
   const W = tw + pad * 2;
   const H = fs * 1.18 * lines.length + pad * 1.2;
+  // (callers await ensureText() first so the measurement uses the real font)
   return {
     id: 'txt-' + uid(),
     name: text,
+    fontSpec: { font: `${weight} ${fs}px ${font}`, text },
     ratio: H / W,
     size: clamp(0.12 * Math.sqrt(tw / fs), 0.16, 0.6),
     outline: style.outline ?? 0.035,

@@ -130,8 +130,8 @@
   position: relative;
   z-index: 1;
   display: flex;
-  gap: 26px;
-  padding: 30px max(16px, calc(50vw - 640px)) 26px;
+  gap: 22px;
+  padding: 30px max(16px, calc(50vw - 690px)) 26px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   scrollbar-width: thin;
@@ -155,7 +155,8 @@
   --lift: 0px;
   position: relative;
   flex: 0 0 auto;
-  width: 236px;
+  /* all six machines fit side by side on a laptop screen, scroll on phones */
+  width: clamp(200px, calc((100vw - 190px) / 6), 236px);
   display: grid;
   grid-template-rows: auto 1fr auto auto;
   padding: 0;
@@ -255,18 +256,22 @@
 
 .c-screen {
   position: absolute;
-  left: 18%;
-  right: 18%;
+  left: 10%;
+  right: 42%;
   top: 22%;
   height: 26%;
+  padding: 2px;
+  text-align: center;
+  line-height: 1.1;
   display: grid;
   place-items: center;
   border-radius: 4px;
   background: var(--accent);
   box-shadow: 0 0 16px var(--glow);
   font-family: var(--font-sign);
-  font-size: 10px;
+  font-size: 9px;
   color: #000;
+  overflow: hidden;
   animation: screen-blink 1.6s infinite;
 }
 
@@ -278,7 +283,7 @@
 
 .c-curtain {
   position: absolute;
-  inset: 0 0 0 38%;
+  inset: 0 0 0 62%;
   z-index: 1;
   background:
     repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.25) 0 6px, rgba(255, 255, 255, 0.08) 6px 14px, rgba(0, 0, 0, 0.12) 14px 20px),
@@ -406,8 +411,8 @@
 
 .m-fisheye .c-screen {
   border-radius: 50%;
-  left: 24%;
-  right: 24%;
+  left: 12%;
+  right: 46%;
   height: 34%;
 }
 

@@ -1,0 +1,15 @@
+{
+  "name": "kacha-photo-shop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "复古风网页大头贴小店：6 台主题大头贴机，完整模拟线下拍摄、涂鸦和打印流程。",
+  "scripts": {
+    "start": "node scripts/serve.mjs 5173",
+    "vendor": "node scripts/vendor-mediapipe.mjs",
+    "test:e2e": "node tests/e2e.cjs",
+    "gallery": "node tests/gallery.cjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.56.1"
+  }
+}

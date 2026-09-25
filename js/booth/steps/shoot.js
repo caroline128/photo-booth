@@ -8,6 +8,7 @@ import { btn } from '../ui.js';
 import { compose } from '../../engine/compose.js';
 import { offlineFx, renderToCanvas } from '../../engine/glfx.js';
 import { infoFor } from './setup.js';
+import { recordCanvas } from '../../engine/recorder.js';
 
 function captureWidth(layout) {
   const s = layout.slots[0];
@@ -100,6 +101,9 @@ export async function shoot(b) {
   const skip = btn(t.shoot.skipLabel || '⚡ 立即拍（跳过倒数）', () => skipFn?.(), 'ghost');
   foot.append(h('span.foot-note', `每张倒数 ${t.shoot.countdown} 秒，看着上方镜头～`), skip);
   b.say('ready');
+  // behind-the-scenes clip of the whole shoot
+  const rec = recordCanvas(b.stage.view);
+  b.cleanups.push(() => rec?.stop());
   await b.wait(sleep(1400));
   const poses = t.shoot.poses || [];
   s.shots = [];
@@ -113,6 +117,10 @@ export async function shoot(b) {
   ui.setPose(null);
   b.say('done');
   await b.wait(sleep(900));
+  if (rec) {
+    s.video = await rec.stop();
+    s.videoExt = rec.ext;
+  }
 }
 
 export async function pickAndRetake(b) {
@@ -120,6 +128,7 @@ export async function pickAndRetake(b) {
   const s = b.session;
   const need = s.layout.photos;
   const total = s.shots.length;
+  b.stage?.stop(); // pause the live view until a retake needs it
   const freePick = total > need;
   let sel = freePick ? [] : Array.from({ length: need }, (_, i) => i);
   const { main, foot, timer } = b.show({ step: 'pick', title: freePick ? `选出 ${need} 张` : '确认照片', sub: freePick ? 'PICK YOUR BEST' : 'CHECK', timer: t.pickTime || 75 });
@@ -197,6 +206,7 @@ export async function pickAndRetake(b) {
     const ui = shootUI(b, { total: 1 });
     ov.append(h('p.retake-title', `重拍第 ${i + 1} 张`), h('div.live-box', ui.live));
     b.screenEl.append(ov);
+    b.stage.start();
     b.say('retake');
     ui.setShotNo(0);
     let skipFn = null;
@@ -205,8 +215,8 @@ export async function pickAndRetake(b) {
     const pose = { text: '再来一张！', icon: '📸', sub: 'ONE MORE' };
     const { shot, thumb } = await takeOne(b, ui, t.shoot.countdown, pose, (fn) => (skipFn = fn));
     s.shots[i] = shot;
-    thumbs[i] = shotThumb(b, shot, 360);
-    void thumb;
+    thumbs[i] = thumb;
+    b.stage.stop();
     ov.remove();
     timer?.pause(false);
     render();
