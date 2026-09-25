@@ -1,7 +1,8 @@
 // End-to-end run through one or more machines with Chromium's fake camera.
 //   NODE_PATH=$(npm root -g) node tests/e2e.cjs [themeId ...]
 // Env: BASE (default http://localhost:5173), OUT (screenshot dir), W/H viewport,
-//      DEMO=1 to deny the camera and use the demo cat.
+//      DEMO=1 to deny the camera and use the demo cat, NOFONTS=1 to skip web
+//      fonts (flaky networks), JPEG=1 for compact screenshots.
 
 const { chromium } = require('playwright');
 const fs = require('fs');
@@ -45,7 +46,8 @@ async function run() {
   if (process.env.NOFONTS) await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
   const shot = async (name) => {
     try {
-      await page.screenshot({ path: path.join(OUT, `${name}.png`), timeout: 45000 });
+      const jpeg = !!process.env.JPEG; // compact shots for docs
+      await page.screenshot({ path: path.join(OUT, `${name}.${jpeg ? 'jpg' : 'png'}`), timeout: 45000, ...(jpeg ? { type: 'jpeg', quality: 80 } : {}) });
       console.log('  📸', name);
     } catch (e) {
       console.log('  ⚠️ screenshot failed', name, e.message.split('\n')[0]);
