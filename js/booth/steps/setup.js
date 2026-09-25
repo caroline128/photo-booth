@@ -130,7 +130,8 @@ export async function chooseOptions(b) {
     let ok;
     const clicked = new Promise((r) => (ok = r));
     foot.append(btn('确定 ✓', () => ok(), 'primary big'));
-    if (opt.line) b.say(opt.line);
+    // option line: a key into theme.lines, or the line itself
+    if (opt.line) b.speak(typeof opt.line === 'string' && t.lines?.[opt.line] ? t.lines[opt.line] : opt.line);
     await b.wait(Promise.race([clicked, timer.done]));
     b.session.options[opt.id] = cur;
   }

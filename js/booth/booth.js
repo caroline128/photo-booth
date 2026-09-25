@@ -165,9 +165,13 @@ export class Booth {
     return Promise.race([p, this.aborted]);
   }
 
+  /** Speak one of the theme's voice lines by key (missing keys stay silent). */
   say(key, extra = {}) {
-    const lines = this.theme.lines || {};
-    let line = typeof key === 'string' ? lines[key] : key;
+    this.speak(this.theme.lines?.[key], extra);
+  }
+
+  /** Speak a literal line: string, { text, lang, sub } or an array to pick from. */
+  speak(line, extra = {}) {
     if (Array.isArray(line)) line = pick(line);
     if (!line) return;
     say(line, { lang: this.theme.lang, ...this.theme.voice, ...extra });

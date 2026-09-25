@@ -293,6 +293,10 @@
   font-family: var(--font-ui);
 }
 
+.steps[hidden] {
+  display: none;
+}
+
 .steps li {
   padding: 3px 9px;
   border-radius: 999px;
@@ -817,7 +821,8 @@
   min-height: 0;
   object-fit: contain;
   align-self: center;
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+  /* drop-shadow follows rounded corners / die-cut sheets */
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.4));
 }
 
 .review-left {
@@ -882,7 +887,7 @@
 .frame-card img {
   height: 110px;
   width: auto;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.35));
 }
 
 .option-step {
@@ -1285,7 +1290,7 @@
   max-height: 54vh;
   width: auto;
   max-width: 100%;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.4));
 }
 
 .pick-status,

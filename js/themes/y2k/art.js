@@ -721,9 +721,9 @@ function wordPaint(ctx, fill, fs) {
 
 /**
  * Canvas word-art sticker: stacked outlines (outermost first), a fill that can
- * be a colour, gradient or pattern, optional neon glow and decorations.
+ * be a colour, gradient or pattern, and decorations drawn on top.
  */
-function wordArt({ id, name, text, font = FONT.pop, size = 0.34, group, fill = PINK, rings = [['#fff', 0.2]], glow, deco, pad = 0.34, lh = 1.08, outline = 0.05, outlineColor, holo }) {
+function wordArt({ id, name, text, font = FONT.pop, size = 0.34, group, fill = PINK, rings = [['#fff', 0.2]], deco, pad = 0.34, lh = 1.08, outline = 0.05, outlineColor, holo }) {
   const fs = 100;
   const css = `400 ${fs}px ${font}`;
   const lines = text.split('\n');
@@ -767,10 +767,6 @@ function wordArt({ id, name, text, font = FONT.pop, size = 0.34, group, fill = P
           ctx.lineWidth = width * fs;
           ctx.strokeStyle = color;
           ctx.strokeText(l, 0, 0);
-        }
-        if (glow) {
-          ctx.shadowColor = glow;
-          ctx.shadowBlur = fs * 0.3 * k;
         }
         ctx.fillStyle = wordPaint(ctx, fill, fs);
         ctx.fillText(l, 0, 0);
@@ -1184,8 +1180,8 @@ export const backgrounds = [
 
 // ----------------------------------------------------------------- layouts
 // A FuRyu-style sticker sheet: 1 big + 4 medium + a strip of mini seals, all
-// 6 shots used (small ones repeat photos via `src`). Extra fields (logo,
-// date, spots, cut) tell the frames where the logo and gap stamps go.
+// 6 shots used (small ones repeat photos via `src`). Extra fields (logo, date,
+// serial, mode, cut, spots) tell the frames where their text and gap stamps go.
 
 const mini6 = (y) =>
   [0, 1, 2, 3, 4].map((src, i) => ({ x: 56 + i * 223, y, w: 196, h: i % 2 ? 202 : 196, shape: i % 2 ? 'heart' : 'circle', src }));
@@ -1311,6 +1307,7 @@ function dieCuts(ctx, L, st) {
   }
 }
 
+/** 'PURI' ☆ 'PARA' with a vector star (the ☆ glyph is missing from the web font). */
 function logo(ctx, { x, y, size }, st) {
   const fs = size;
   ctx.save();
@@ -1325,9 +1322,7 @@ function logo(ctx, { x, y, size }, st) {
   const sx = x0 + a + gap + sr;
   const x1 = sx + sr + gap;
   const ty = y + fs * 0.04;
-  const shapes = () => {
-    starPath(ctx, sx, y - fs * 0.02, sr, 5, 0.5, -Math.PI / 2 + 0.2);
-  };
+  const star = () => starPath(ctx, sx, y - fs * 0.02, sr, 5, 0.5, -Math.PI / 2 + 0.2);
   ctx.lineJoin = 'round';
   for (const [color, lw] of [[st.outer, 0.36], [st.stroke, 0.18]]) {
     if (!color) continue;
@@ -1335,7 +1330,7 @@ function logo(ctx, { x, y, size }, st) {
     ctx.strokeStyle = color;
     ctx.strokeText('PURI', x0, ty);
     ctx.strokeText('PARA', x1, ty);
-    shapes();
+    star();
     ctx.stroke();
   }
   if (st.glow) {
@@ -1345,7 +1340,7 @@ function logo(ctx, { x, y, size }, st) {
   ctx.fillStyle = fillGrad(ctx, st.fill, 0, y - fs * 0.45, 0, y + fs * 0.45);
   ctx.fillText('PURI', x0, ty);
   ctx.fillText('PARA', x1, ty);
-  shapes();
+  star();
   ctx.fillStyle = st.star || LEMON;
   ctx.fill();
   ctx.shadowBlur = 0;
@@ -1415,8 +1410,8 @@ function perforation(ctx, L, st) {
 
 /**
  * Frame factory: `paper` paints the sheet, then every slot gets a die-cut
- * sticker border; `over` adds the logo, date, gap stamps and (sticker sheet)
- * the perforation above the mini seals.
+ * sticker border; `over` adds the gap stamps, logo, date, serial, 盛れ mode
+ * tag and (sticker sheet) the perforation above the mini seals.
  */
 function frame({ id, name, paper, style }) {
   return {

@@ -26,9 +26,9 @@ css/themes/<id>.css       机器外壳的主题化样式（选择器以 .theme-<
 | `fonts` | `{ display, ui, load: [...], text }`：`load` 是要预加载的 Google Fonts 字体名；`text` 写上相框/贴纸里用 canvas 画的**所有中日韩文字**（中文字体按字符分包下载，没预载的字会先用系统字体画出来） |
 | `bgm` | `{ style: 'lounge'|'kpop'|'hiphop'|'eurobeat'|'chip'|'bounce', key: midi, prog: [半音偏移...], minor? }` |
 | `lines` | 语音台词：`attract insert paid choose camera props ready cheese done check pick retake filter decorate hurry timeup review print bye`；值为字符串、`{text, lang, sub}` 或数组（随机取） |
-| `shoot` | `{ shots, firstCountdown, countdown, retakes: 1, poses: [{text, icon, sub, line?}], skipLabel? }` |
+| `shoot` | `{ shots, firstCountdown, countdown, retakes: 1, poses: [{text, icon, sub, line?}], skipLabel? }`；`line` 是直接念的台词（字符串或 `{text, lang, sub}`） |
 | `selectTime prepTime pickTime filterTime decorateTime` | 各步骤限时（秒） |
-| `options[]` | 额外选择步骤：`{ id, title, sub, lead, choices: [{id, name, desc, icon}], default, time }`，结果在 `session.options[id]` |
+| `options[]` | 额外选择步骤（在选相框之前）：`{ id, title, sub, lead, line, choices: [{id, name, desc, icon}], default, time }`，结果在 `session.options[id]`；`line` 可以是 `lines` 里的键名，也可以直接是台词 |
 | `backgrounds[]` | 可选，换背景：`{ id, name, swatch (CSS background), paint(ctx, w, h, t) }`（需要人像分割模型） |
 | `props[]` / `maxProps` / `sampleProps[]` | 道具，见 §2 |
 | `liveFx(session, faces, w, h)` | 镜头特性（鱼眼、闪光、美颜、大眼……），实时预览和成片都会用 |

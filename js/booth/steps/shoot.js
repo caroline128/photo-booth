@@ -70,7 +70,7 @@ function shootUI(b, { total }) {
 
 async function takeOne(b, ui, seconds, pose, onSkip) {
   ui.setPose(pose);
-  if (pose) b.say(pose.line || { text: pose.text });
+  if (pose) b.speak(pose.line || { text: pose.text, lang: 'zh-CN' });
   const cd = countdown(seconds, (left) => {
     ui.setCount(left);
     if (left > 0 && left <= 3) sfx.beep(left === 1);
@@ -207,12 +207,12 @@ export async function pickAndRetake(b) {
     ov.append(h('p.retake-title', `重拍第 ${i + 1} 张`), h('div.live-box', ui.live));
     b.screenEl.append(ov);
     b.stage.start();
-    b.say('retake');
     ui.setShotNo(0);
     let skipFn = null;
     const skip = btn('⚡ 立即拍', () => skipFn?.(), 'ghost');
     ov.append(skip);
-    const pose = { text: '再来一张！', icon: '📸', sub: 'ONE MORE' };
+    // the theme's retake line doubles as the pose prompt (so it isn't cut off)
+    const pose = { text: '再来一张！', icon: '📸', sub: 'ONE MORE', line: t.lines?.retake || { text: '再来一张！', lang: 'zh-CN' } };
     const { shot, thumb } = await takeOne(b, ui, t.shoot.countdown, pose, (fn) => (skipFn = fn));
     s.shots[i] = shot;
     thumbs[i] = thumb;

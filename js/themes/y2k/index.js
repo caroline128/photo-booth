@@ -44,9 +44,9 @@ export default {
   fonts: {
     display: '"Mochiy Pop One", "ZCOOL KuaiLe", sans-serif',
     ui: '"ZCOOL KuaiLe", "Noto Sans SC", sans-serif',
-    // frames draw synchronously, so their fonts are preloaded; stickers and
-    // text stamps fetch their own glyphs through `fontSpec`
-    load: ['Mochiy Pop One', 'VT323'],
+    // every canvas font (frames draw synchronously; stickers also carry a
+    // `fontSpec` so their glyphs are fetched again right before rendering)
+    load: ['Mochiy Pop One', 'Dela Gothic One', 'Bungee', 'VT323'],
     text: 'PURIPARA ミニシール No.0123456789 HEISEI GAL REIWA NATURAL MODE',
   },
   bgm: { style: 'eurobeat', key: 61, prog: [0, 8, 10, 5] },
@@ -79,7 +79,7 @@ export default {
     retakes: 1,
     skipLabel: '⚡ 立即拍',
     poses: [
-      { text: '辣妹剪刀手', icon: '💅', sub: 'ギャルピース', line: ja('ギャルピース！', '辣妹剪刀手！手背朝外往下比～') },
+      { text: '辣妹剪刀手', icon: '💅', sub: 'ギャルピース', line: ja('ギャルピース！', '辣妹剪刀手！把剪刀手倒过来往下比～') },
       { text: '比个耶', icon: '✌️', sub: 'ピース', line: ja('ピース！', '比个耶！') },
       { text: '小老虎嗷呜', icon: '🐯', sub: 'がおー', line: ja('がおー！', '嗷呜～ 双手当爪子！') },
       { text: '敬礼剪刀手', icon: '🙋', sub: 'ラジャ', line: ja('ラジャ！', '收到！剪刀手放在额头边敬个礼～') },

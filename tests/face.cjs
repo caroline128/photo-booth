@@ -46,8 +46,9 @@ const dataUrl = 'data:image/jpeg;base64,' + fs.readFileSync(imgPath).toString('b
     };
   }, dataUrl);
 
-  await page.goto(`${BASE}/#/m/${id}`);
-  await page.waitForSelector('.attract', { timeout: 15000 });
+  await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
+  await page.goto(`${BASE}/#/m/${id}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await page.waitForSelector('.attract', { timeout: 60000 });
   await page.click('.screen-main');
   await page.waitForSelector('.coin-step');
   for (let i = 0; i < 12 && (await page.$('.coin-step')); i++) {
@@ -64,7 +65,7 @@ const dataUrl = 'data:image/jpeg;base64,' + fs.readFileSync(imgPath).toString('b
   }
   await page.waitForSelector('.frame-step');
   await page.click('.screen-foot .btn.primary');
-  await page.waitForSelector('.prep', { timeout: 20000 });
+  await page.waitForSelector('.prep', { timeout: 60000 });
   const n = await page.locator('.prop-card').count();
   const pickProps = (process.env.PROPS || '0,2,5').split(',').map(Number).filter((k) => k < n);
   for (const k of pickProps) {
@@ -76,7 +77,7 @@ const dataUrl = 'data:image/jpeg;base64,' + fs.readFileSync(imgPath).toString('b
     const nb = await page.locator('.bg-card').count();
     if (nb > 2) await page.locator('.bg-card').nth(2).click();
   }
-  await page.waitForTimeout(6000); // let MediaPipe load + track
+  await page.waitForTimeout(12000); // let MediaPipe load + track (slow under load)
   const chip = await page.$eval('.ar-chip', (e) => e.dataset.state + ' | ' + e.textContent).catch(() => '');
   console.log('AR chip:', chip);
   await page.locator('.live').screenshot({ path: path.join(outDir, `face-${id}-1.png`) });

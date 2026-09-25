@@ -75,6 +75,7 @@ export function compose(layout, frame, photos, info = {}) {
     if (img) drawCover(ctx, img, s.x, s.y, s.w, s.h);
     else placeholder(ctx, s, idx, info);
     ctx.restore();
+    slotPath(ctx, s); // the placeholder drew its own paths; restore the slot shape
     frame.paint.slot?.(ctx, s, i, { ...info, photoIndex: idx });
     ctx.restore();
   });
