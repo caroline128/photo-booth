@@ -165,12 +165,18 @@ async function run() {
     await page.waitForTimeout(700);
     await shot(`${id}-09-filter`);
     await page.click('.screen-foot .btn.primary');
-    // extra steps (captions etc.) get a generic "primary" click
-    for (let i = 0; i < 3; i++) {
-      await page.waitForTimeout(700);
+    // optional steps between filter and decorate: captions, doodle-booth interlude
+    for (let i = 0; i < 8; i++) {
+      await page.waitForSelector('.deco-step, .caption-list, .interlude', { timeout: 20000 });
       if (await page.$('.deco-step')) break;
-      await shot(`${id}-09b-extra-${i}`);
-      await page.click('.screen-foot .btn.primary').catch(() => {});
+      if (await page.$('.caption-list')) {
+        await shot(`${id}-09b-captions`);
+        await page.click('.screen-foot .btn.primary');
+        await page.waitForTimeout(600);
+      } else if (await page.$('.interlude')) {
+        await shot(`${id}-09c-interlude`);
+        await page.waitForSelector('.deco-step', { timeout: 20000 }); // auto-continues
+      }
     }
     // decorate
     await page.waitForSelector('.deco-step', { timeout: 10000 });
