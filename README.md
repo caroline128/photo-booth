@@ -12,6 +12,10 @@
 | 选版式和相框，右边是示意图 | 开着「扩展思考」拍摄：倒数更长，Claude 的思考过程会一行行出现 |
 | ![涂鸦](docs/screenshots/decorate.jpg) | ![成片](docs/screenshots/done.jpg) |
 | 限时涂鸦：贴纸、文字、画笔 | 成片作为 Artifact 展示，有「预览 / 代码」两个页签 |
+| ![论文插图相框 + 墨线插画滤镜](docs/screenshots/done-paper.jpg) | ![终端风相框 + ASCII 滤镜](docs/screenshots/done-terminal.jpg) |
+| Opus 六宫格：「论文插图」相框 + 「墨线插画」滤镜 | Sonnet 四宫格：「终端风」相框 + 「终端 ASCII」滤镜 |
+| ![手机](docs/screenshots/mobile.jpg) | |
+| 手机上：取景器在上，对话和操作在下 | |
 
 ## 怎么玩
 

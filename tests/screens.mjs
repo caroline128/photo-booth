@@ -24,7 +24,7 @@ const dockBtn = async (p, text) => {
   return p.locator('.dock button', { hasText: text }).first();
 };
 
-async function session(p, { title, model = 'Sonnet', think = false, frame = '聊天截图', layout = null, filter = null, stickers = [], shots = {} }) {
+async function session(p, { title, model = 'Sonnet', think = false, frame = '聊天截图', layout = null, filter = null, stickers = [], doodle = true, shots = {} }) {
   await p.goto(`${base}/?fast=1`);
   await p.waitForSelector('.composer textarea');
   await p.fill('.composer textarea', title);
@@ -70,14 +70,16 @@ async function session(p, { title, model = 'Sonnet', think = false, frame = '聊
     }, [x, y, w]);
     await p.waitForTimeout(150);
   }
-  await p.locator('.tool-tab', { hasText: '画笔' }).click();
-  await p.locator('.pen-opt', { hasText: '星芒笔' }).click();
-  const box = await p.locator('.editor-canvas').boundingBox();
-  await p.mouse.move(box.x + box.width * 0.12, box.y + box.height * 0.08);
-  await p.mouse.down();
-  for (let i = 0; i <= 16; i++) await p.mouse.move(box.x + box.width * (0.12 + i * 0.045), box.y + box.height * (0.08 + Math.sin(i / 2.5) * 0.015));
-  await p.mouse.up();
-  await p.locator('.tool-tab', { hasText: '贴纸' }).click();
+  if (doodle) {
+    await p.locator('.tool-tab', { hasText: '画笔' }).click();
+    await p.locator('.pen-opt', { hasText: '星芒笔' }).click();
+    const box = await p.locator('.editor-canvas').boundingBox();
+    await p.mouse.move(box.x + box.width * 0.12, box.y + box.height * 0.08);
+    await p.mouse.down();
+    for (let i = 0; i <= 16; i++) await p.mouse.move(box.x + box.width * (0.12 + i * 0.045), box.y + box.height * (0.08 + Math.sin(i / 2.5) * 0.015));
+    await p.mouse.up();
+    await p.locator('.tool-tab', { hasText: '贴纸' }).click();
+  }
   await p.evaluate(() => window.__booth?.S?.editor?.select(window.__booth.S.editor.items.at(-1) || null));
   await p.waitForTimeout(400);
   if (shots.decorate) await snap(p, shots.decorate);
@@ -87,7 +89,20 @@ async function session(p, { title, model = 'Sonnet', think = false, frame = '聊
   if (shots.done) await snap(p, shots.done);
 }
 
+const ONLY = process.env.ONLY; // e.g. ONLY=gallery to redo just the sheets
+
 try {
+  if (ONLY !== 'gallery') await sessions();
+  await sheets();
+} catch (e) {
+  console.error('✗', e);
+  process.exitCode = 1;
+} finally {
+  await browser.close();
+  server.close();
+}
+
+async function sessions() {
   const p = await page();
   await session(p, {
     title: '周五下班后的我们',
@@ -101,8 +116,8 @@ try {
     ],
     shots: { frame: 'frame', shoot: 'shoot', decorate: 'decorate', done: 'done' },
   });
-  await session(p, { title: '毕业快乐！', model: 'Opus', frame: '论文插图', filter: '墨线插画', stickers: [['插画', 1, 0.2, 0.9, 0.16]], shots: { done: 'done-paper' } });
-  await session(p, { title: '', model: 'Sonnet', layout: '四宫格', frame: '终端风', filter: '终端 ASCII', shots: { done: 'done-terminal' } });
+  await session(p, { title: '毕业快乐！', model: 'Opus', frame: '论文插图', filter: '墨线插画', stickers: [['插画', 1, 0.86, 0.9, 0.14]], doodle: false, shots: { done: 'done-paper' } });
+  await session(p, { title: '', model: 'Sonnet', layout: '四宫格', frame: '终端风', filter: '终端 ASCII', doodle: false, shots: { done: 'done-terminal' } });
   await p.goto(`${base}/#/`);
   await p.waitForSelector('.home .shelf a');
   await p.waitForTimeout(1200);
@@ -121,8 +136,11 @@ try {
   await m.waitForSelector('.live-count span');
   await m.waitForTimeout(250);
   await snap(m, 'mobile', { quality: 80 });
+}
 
-  const g = await page({ viewport: { width: 1700, height: 1000 } });
+async function sheets() {
+  // a short viewport so the full-page capture ends where the content does
+  const g = await page({ viewport: { width: 1700, height: 300 } });
   await g.goto(`${base}/dev/gallery.html?s=frames&layout=strip4&scale=0.3`);
   await g.waitForSelector('body[data-ready="1"]', { timeout: 60000 });
   await g.addStyleTag({ content: 'h2,h3,figcaption{display:none} .row{display:inline-flex;margin-right:14px} body{padding:18px}' });
@@ -133,10 +151,4 @@ try {
   await g.addStyleTag({ content: 'h2,h3,figcaption{display:none} .row{display:contents} #root{display:flex;flex-wrap:wrap;gap:6px} canvas{width:150px;height:auto;border:none;background:transparent}' });
   await g.waitForTimeout(1500);
   await snap(g, 'stickers', { fullPage: true });
-} catch (e) {
-  console.error('✗', e);
-  process.exitCode = 1;
-} finally {
-  await browser.close();
-  server.close();
 }
