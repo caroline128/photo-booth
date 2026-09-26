@@ -12,6 +12,7 @@ import { makeInfo } from '../photo/frames/common.js';
 import { FILTERS, BEAUTY, applyFilter } from '../photo/fx.js';
 import { STICKERS, GROUPS } from '../art/stickers.js';
 import { needAll } from '../core/fonts.js';
+import { renderDef } from '../photo/editor.js';
 
 const root = document.getElementById('root');
 const want = new URLSearchParams(location.search).get('s')?.split(',') || ['spark', 'mascot', 'scene'];
@@ -40,8 +41,14 @@ const sections = {
           ctx.fillStyle = bg;
           ctx.fillRect(0, 0, c.width, c.height);
         }
-        ctx.translate(10, 10);
-        st.draw(ctx, w, hh);
+        if (q.has('outline')) {
+          // exactly what the editor pastes onto a photo (die-cut edge included)
+          const b = renderDef(st, w, hh);
+          ctx.drawImage(b.img, 10 - b.pad, 10 - b.pad);
+        } else {
+          ctx.translate(10, 10);
+          st.draw(ctx, w, hh);
+        }
         row.append(fig(c, `${st.name} · ${st.id}`));
       }
       out.push(h('h3', `${g.name} · ${g.id}`), row);

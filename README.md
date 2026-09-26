@@ -56,7 +56,17 @@
 
 ## 涂鸦
 
-<!-- stickers -->
+- **贴纸**：45 款，分 5 类，每类 9 款。线条较细的插画贴纸带白色裁切边，贴在深色照片上也看得清。
+
+  ![45 款贴纸](docs/screenshots/stickers.jpg)
+
+  | 分类 | 贴纸 |
+  |---|---|
+  | 星芒 | 星芒、印刷星芒、三颗星芒、星芒光环、闪闪、小芒（原版 / 比耶 / 比心 / 想一想） |
+  | 对话 | 「你说得完全正确！」「好问题！」「让我想想……」、你的消息、正在输入、「思考了 3 秒」、复制 / 赞 / 踩 / 重试、回复框、「Claude 也会犯错」 |
+  | 终端 | 提示符、`Smiling…` 转圈、测试通过、`/compact`、`ultrathink`、`</>`、`git commit`、笑容 diff、上下文 96% |
+  | 插画 | 爱心、挥挥手、灵感灯泡、书堆、咖啡、纸飞机、相机、「看这里」、小花 |
+  | 徽章 | 「笑容合格」印章、Haiku / Sonnet / Opus 模型签、HHH 缎带（Helpful · Honest · Harmless）、大头贴.png、Fig. 1、今日份开心、拍照上限 |
 
 - **文字**：衬线、「Claude 说」对话卡片、手写、终端、粗体五种样式，还有常用语一键添加。
 - **画笔**：墨水笔、马克笔、荧光笔、描边笔、星芒笔、点点笔、虚线笔、渐变笔和橡皮。笔画单独放在一层，橡皮不会擦到照片。
@@ -116,7 +126,7 @@ node tests/shot.mjs "/dev/gallery.html?s=frames,stickers,filters" test-results/g
 node tests/screens.mjs                       # 重新生成 README 里的截图
 ```
 
-URL 加 `?fast=1` 会缩短所有倒数和计时，方便调试。素材图鉴 `dev/gallery.html?s=spark,mascot,scene,frames,stickers,filters` 能一次看到所有素材，相框部分支持 `frame=`、`layout=`、`title=`、`scale=` 参数。
+URL 加 `?fast=1` 会缩短所有倒数和计时，方便调试。`dev/probe.html?f=ink&pose=peace` 可以单独看某个滤镜在小芒照片上的效果。素材图鉴 `dev/gallery.html?s=spark,mascot,scene,frames,stickers,filters` 能一次看到所有素材，相框部分支持 `frame=`、`layout=`、`title=`、`scale=` 参数。
 
 ## 说明
 

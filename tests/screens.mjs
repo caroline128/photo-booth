@@ -123,7 +123,7 @@ try {
   await snap(m, 'mobile', { quality: 80 });
 
   const g = await page({ viewport: { width: 1700, height: 1000 } });
-  await g.goto(`${base}/dev/gallery.html?s=frames&layout=strip4&scale=0.34`);
+  await g.goto(`${base}/dev/gallery.html?s=frames&layout=strip4&scale=0.3`);
   await g.waitForSelector('body[data-ready="1"]', { timeout: 60000 });
   await g.addStyleTag({ content: 'h2,h3,figcaption{display:none} .row{display:inline-flex;margin-right:14px} body{padding:18px}' });
   await g.waitForTimeout(1500);

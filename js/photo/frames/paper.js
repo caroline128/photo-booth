@@ -57,7 +57,8 @@ function copy(L, info) {
       ? `消融实验。每加入一个组件，笑容都会更明显一些；完整方法 (${best}) 的笑容最为灿烂。`
       : `消融实验。从「说茄子」基线出发，逐一加入各个组件，笑容随之单调增加；完整方法 (${best}) 效果最好，且未观察到过拟合。`,
     labels,
-    stamp: `arXiv:${String(d.getFullYear()).slice(2)}${pad(d.getMonth() + 1)}.${pad(info.serial || 1, 5)}v1   [cs.SMILE]   ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`,
+    // "smile/" is not a real arXiv archive, so the number can never point at an actual paper
+    stamp: `arXiv:smile/${String(d.getFullYear()).slice(2)}${pad(d.getMonth() + 1)}${pad(info.serial || 1, 3)}v1   [cs.SMILE]   ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`,
     page: '1',
   };
 }
