@@ -1,107 +1,125 @@
-# 📸 咔嚓咔嚓大头贴铺 · KACHA KACHA PHOTO SHOP
+# ✻ Claude 大头贴照相馆
 
-一家开在浏览器里的复古大头贴小店。店里摆着 6 台风格不同的大头贴机，每台都尽量还原线下的拍摄流程：投币、选相框、从道具架拿道具、倒数拍照（有一次重拍机会）、选片、调滤镜、限时涂鸦贴贴纸，最后看着照片从出片口一点点吐出来。
+一台开在浏览器里的 Claude 主题大头贴机。界面照着 claude.ai 做：左边是和 Claude 的对话，Claude 一步步带你拍；右边是 Artifact 面板，实时显示取景器和照片。选相框、倒数拍照、选片重拍、选滤镜、限时涂鸦，最后照片从出片口「打印」出来，存进侧栏的「最近」。
 
-![大厅：6 台大头贴机](docs/screenshots/shop.jpg)
+所有图像都是 JavaScript 在 Canvas 上画的，包括星芒标志、吉祥物小芒、演示用的拍摄场景、相框、贴纸、画笔和滤镜。仓库里没有图片素材。
 
-- **调研**：[docs/research.md](docs/research.md)，整理了韩国人生四格、日本プリクラ、国内大头贴回潮和欧美化学机的品牌、流程和风格，每条都附了来源。
-- **机器开发说明**：[docs/THEME_API.md](docs/THEME_API.md)
-
-## 店里的 6 台机器
-
-| 机器 | 线下原型（见调研） | 这台机器的玩法 |
-|---|---|---|
-| **PHOTOMATIC** 复古黑白胶片机 | 欧美化学显影照相亭：4 次闪光，等 3–4 分钟，拿到一条温热潮湿的四格竖条 | 4 连拍，2×8 英寸长条；硬闪或柔光；黑白、棕褐、蓝晒、褪色彩色四种冲洗；礼帽、八字胡、烟斗等 11 件道具；打印时屏幕播放「曝光 → 显影 → 定影 → 烘干」，照片出来后慢慢显影 |
-| **STAR 4CUT** K-POP 人生四格 | 韩国自助照相馆：拍 8–10 张、每张约 10 秒，挑 4 张，一次打印两条；偶像联名框、小卡文化 | 8 张 × 10 秒倒数，可用遥控快门，挑 4 张；人生四格竖条（一式两条）、MULTI 四宫格、55×85mm 偶像小卡三种版式；和原创虚拟偶像 STARRY 的合照框、小卡套装饰；6 种换色背景 |
-| **FISHEYE CAM** 鱼眼大头机 | 韩国租赁机的平视鱼眼「门铃视角」 | 3 档鱼眼强度，圆形猫眼或全画幅；四连猫眼、超大猫眼、监控三连三种版式；夜视仪、监控画面等滤镜；「按门铃」立即拍 |
-| **PURI☆PARA** Y2K 辣妹大头贴 | 日本プリ机：おまかせ模式固定 6 张，涂鸦台限时 3–5 分钟，平成风和荧光笔回潮 | 「平成浓妆 / 令和自然」两档盛れ（美白、磨皮、大眼）；星星、豹纹、斑马纹等 6 种背景；拍完移动到涂鸦台，3 分钟落書き（荧光笔、闪粉笔、平成流行语贴纸）；打印成一大张可撕的贴纸 |
-| **DIGI 2003** 千禧 CCD 大头贴 | CCD 怀旧：颗粒、闪光过曝、橙色日期戳；千禧年代的「非主流」 | 低像素传感器质感；闪光灯开关；日期戳可以「穿越回 2005」；4×4 迷你贴纸、2×2、翻盖手机屏幕三种版式；非主流斜刘海、翻盖手机等道具；火星文贴纸 |
-| **抽象表情包机** MEME BOOTH | 国内的热梗、方言模板大头贴（38 元拍 9 张） | 9 张 × 3 秒快拍；每张配一句热梗（24 句可选，也能自己写）；九宫格、四宫格、单张表情包三种版式；电子包浆、像素风、哈哈镜等滤镜 |
-
-所有道具、贴纸、相框、背景都是用代码画的原创素材（SVG / Canvas），没有用真实艺人或品牌形象。
-
-## 截图
-
-截图用的是「店猫演示模式」（没有摄像头时，由店猫咔咔当模特）。
+![首页：像 claude.ai 的新对话](docs/screenshots/home.jpg)
 
 | | |
 |---|---|
-| ![K-POP 人生四格：拍摄中，姿势提示和韩语语音](docs/screenshots/kpop-shoot.jpg) | ![鱼眼大头机：门铃视角](docs/screenshots/fisheye-shoot.jpg) |
-| K-POP 人生四格：倒数拍摄，屏幕上有姿势提示，同时念韩语语音、显示中文字幕 | 鱼眼大头机：门铃视角的鱼眼镜头 |
-| ![Y2K 辣妹大头贴：落書き](docs/screenshots/y2k-decorate.jpg) | ![抽象表情包机：配字](docs/screenshots/meme-captions.jpg) |
-| Y2K 辣妹大头贴：限时涂鸦，平成流行语贴纸 | 抽象表情包机：每张配一句热梗 |
-| ![复古黑白胶片机：出片口显影](docs/screenshots/classic-print.jpg) | ![千禧 CCD 大头贴：4×4 迷你贴纸](docs/screenshots/ccd-viewer.jpg) |
-| 复古黑白胶片机：照片从出片口出来，慢慢显影 | 千禧 CCD 大头贴：4×4 迷你贴纸，带橙色日期戳 |
+| ![选相框](docs/screenshots/frame.jpg) | ![扩展思考：倒数时 Claude 在想怎么帮你摆姿势](docs/screenshots/shoot.jpg) |
+| 选版式和相框，右边是示意图 | 开着「扩展思考」拍摄：倒数更长，Claude 的思考过程会一行行出现 |
+| ![涂鸦](docs/screenshots/decorate.jpg) | ![成片](docs/screenshots/done.jpg) |
+| 限时涂鸦：贴纸、文字、画笔 | 成片作为 Artifact 展示，有「预览 / 代码」两个页签 |
 
-## 一次完整的拍摄
+## 怎么玩
 
-1. **待机画面**：机器屏幕循环播放样张，点屏幕开始。
-2. **投币**：点代币投进投币口。代币不够可以去前台免费兑换。
-3. **机器专属选项**：比如闪光灯、鱼眼强度、美颜程度、日期戳。每一步都有倒计时，时间到自动选定。
-4. **选相框**：先选版式，再选相框，预览会带上刚才的选项（比如日期戳年份）。
-5. **道具 & 背景**：打开摄像头，从道具架挑道具。AR 道具会跟着脸走（用 MediaPipe 做人脸检测）；部分机器还能换背景（人像分割）。
-6. **拍摄**：每张都有倒数、姿势提示、提示音和机器语音，最后是闪光和快门声。
-7. **选片 + 一次重拍**：挑出要放进相框的照片，任意一张可以重拍一次。
-8. **滤镜**（表情包机还有「配字」）。
-9. **涂鸦**：贴纸、文字、多种画笔（霓虹、描边、亮片、爱心印章、喷漆、粉笔等），限时完成。可以放大到单张照片来装饰。Y2K 机和日本プリ机一样，拍完要「移动到涂鸦台」。
-10. **最后确认**：打印前检查成片，还有时间的话可以回去再改。
-11. **打印**：屏幕显示热升华色带的黄、品、青、保护膜四遍（复古机显示药水冲洗），然后照片从出片口一点点出来。
-12. **拿到照片**：可以翻到背面看背印，下载 PNG 电子版和拍摄花絮视频，也可以贴到店里的照片墙。
+1. **起个标题。** 首页的输入框像 claude.ai 的对话框，写的这句话会印在照片上。不知道写什么，可以点「想个标题」。
+2. **选模型。** 模型名本身就是诗体，所以也决定了玩法：
 
-没有摄像头或没给权限时，可以让店里的招财猫「咔咔」当模特（演示模式），流程照样能走完。
+   | 模型 | 拍摄 | 放进相框 | 每张倒数（第一张多给一两秒） | 涂鸦时间 | 版式 |
+   |---|---|---|---|---|---|
+   | **Haiku** 俳句 | 3 张 | 3 张 | 3 秒 | 75 秒 | 三格竖条、一大两小 |
+   | **Sonnet** 十四行诗 | 6 张 | 挑 4 张 | 5 秒 | 2 分钟 | 四格竖条、四宫格 |
+   | **Opus** 巨作 | 8 张 | 挑 6 张 | 5 秒 | 3 分钟 | 六宫格、双竖条 |
+
+   打开**扩展思考**后，每张倒数多 3 秒，Claude 会边想边给你提建议（「肩膀放松，下巴微微收一点」），想完会折叠成「思考了 8 秒」。
+3. **选版式和相框。** 右边会用小芒的照片预览效果。
+4. **打开摄像头，或者让小芒当模特。** 没有摄像头、不想开、权限被拒都没关系：吉祥物小芒会在一个小摄影棚里按姿势提示摆 pose，完整流程照样能走完。
+5. **拍摄。** 每张都有倒数、姿势提示（比个耶、假装在认真思考、张开五指做一个星芒……）和快门声。按空格键可以立即拍。
+6. **选片。** 按点选顺序放进相框，整次拍摄有 1 次重拍机会。
+7. **滤镜和美颜。** 滤镜作用在所有照片上，美颜分原生、自然、奶油肌三档。
+8. **涂鸦。** 限时。贴纸可以拖动，右下角的手柄可以旋转缩放（双指也行），还能翻转、复制、置顶、撤销。
+9. **出片。** 照片从出片口一点点出来，然后以 Artifact 的形式展示：可以下载 PNG（按 2×6 / 4×6 英寸、300 dpi 的冲印尺寸出图，600×1800 或 1200×1800 像素）、复制、分享，或者切到「代码」页签看这张大头贴的「源码」。
+
+## 相框
+
+8 款相框，每款都适配全部 6 种版式（三格竖条、四格竖条、一大两小、四宫格、六宫格、双竖条）。
+
+![8 款相框（四格竖条）](docs/screenshots/frames.jpg)
+
+| 相框 | 样子 |
+|---|---|
+| 奶油纸 | 暖白纸、细线和一枚小星芒，标题用衬线体印在底部 |
+| 聊天截图 | 整张照片是一段 claude.ai 对话：你发照片，Claude 在每张下面回你一句 |
+| 终端风 | 一次 Claude Code 会话：欢迎框，你的标题是 prompt，每张照片是一次 `Camera(shot_1.jpg)` 工具调用，最底下是 `Smiling… (esc to interrupt)` |
+| 论文插图 | 一页学术论文：标题、作者「你¹ · Claude²」、摘要，照片是「图 1」，左边还有一行 arXiv 风格的编号 |
+| 模型卡 | 给照片里的人类写的 Model Card：版本、上下文窗口、温度、擅长、已知局限，底部一行护照式机读码 |
+| 俳句 | 和纸上竖排一首俳句（五、七、五），配一枚星芒印章 |
+| 手账插画 | 手绘墨线框、和纸胶带，照片下面是手写的姿势说明，四周是小涂鸦 |
+| 来信 | Claude 写来的一封信：「亲爱的人类：」，照片用胶带贴在信纸上，右上角有邮票和邮戳 |
+
+## 滤镜
+
+原片、奶油、陶土、墨色、旧书页、**墨线插画**（描边 + 平涂，像一张手绘插画）、**双色印刷**（蓝橙两色网点，轻微错版）、像素（12 色）、**终端 ASCII**（用字符拼出你的样子）。除 ASCII 外都是同一个 WebGL 片元着色器，美颜（保边磨皮 + 提亮）也在里面。
+
+## 涂鸦
+
+<!-- stickers -->
+
+- **文字**：衬线、「Claude 说」对话卡片、手写、终端、粗体五种样式，还有常用语一键添加。
+- **画笔**：墨水笔、马克笔、荧光笔、描边笔、星芒笔、点点笔、虚线笔、渐变笔和橡皮。笔画单独放在一层，橡皮不会擦到照片。
+
+## 彩蛋
+
+- 输入框支持斜杠命令：`/haiku` `/sonnet` `/opus` 选模型，`/chat` `/terminal` `/paper` `/card` 选相框，`/ascii` `/ink` `/riso` 选滤镜。
+- 输入 `ultrathink` 会打开扩展思考，而且想得更多。
+- 首页的「Claude 帮我选」随机挑一套模型、相框和滤镜。
 
 ## 运行
 
-摄像头只能在 `https://` 或 `http://localhost` 下使用，直接双击打开 HTML 文件不行。
+摄像头只能在 `https://` 或 `http://localhost` 下使用。
 
 ```bash
-node scripts/serve.mjs        # 或 npm start，然后打开 http://localhost:5173
+npm start            # 等于 node scripts/serve.mjs，然后打开 http://localhost:5173
 ```
 
-任何静态服务器都可以（`npx serve`、`python3 -m http.server`），也可以直接部署到 GitHub Pages 这类静态托管。不需要构建。
+任何静态服务器都可以（`npx serve`、`python3 -m http.server`），也可以直接部署到 GitHub Pages（根目录已经有 `.nojekyll`）。不需要构建，也没有运行时依赖。
 
-AR 道具和换背景用的 MediaPipe 默认从 jsDelivr CDN 加载，模型文件已经放在 `assets/models/`。离线或内网使用时，运行 `npm run vendor` 把 MediaPipe 下载到 `vendor/mediapipe/`，程序会优先用本地的。加载失败时自动切换成「拖动道具」模式。
+**隐私**：摄像头画面只在浏览器里处理，不会上传；拍好的照片存在本机浏览器的 IndexedDB 里，侧栏的「最近」就是从这里读的。
 
-**隐私**：摄像头画面只在浏览器里处理，不会上传。照片墙存在浏览器的 IndexedDB 里。
+## 代码结构
 
-## 技术要点
-
-- 纯静态、原生 ES Modules，没有框架，不需要构建。
-- `js/engine/glfx.js`：单 pass 的 WebGL 着色器，负责所有滤镜——黑白、棕褐、蓝晒、鱼眼、磨皮、美白、大眼、柔焦、颗粒、暗角、色差、像素化、电子包浆、漏光、闪光过曝。
-- `js/engine/stage.js`：实时取景，处理裁切、镜像、换背景、AR 道具和全分辨率抓拍。
-- `js/engine/decorate.js` + `pens.js`：贴纸编辑器（拖动、双指缩放旋转、翻转、撤销）和 10 种画笔；笔画按打印像素记录，出片时重新绘制。
-- `js/engine/printer.js`：热升华打印的分色预渲染。
-- `js/core/audio.js`：WebAudio 实时合成所有音效和背景音乐（投币、倒数、闪光灯充电、快门、打印机马达），机器语音用 SpeechSynthesis，同时显示字幕。
-- `js/engine/recorder.js`：用 MediaRecorder 录下拍摄过程，作为花絮视频。
+纯静态网页，原生 ES Modules，没有框架。
 
 ```
-index.html          入口
-css/                基础、大厅、机器、打印样式；css/themes/ 放每台机器的外观
-js/core/            工具函数、存储、音频、字体
-js/engine/          摄像头、视觉、WebGL 滤镜、取景舞台、排版、贴纸、画笔、打印、录像
-js/booth/           机器外壳和各个步骤（intro / setup / shoot / finish）
-js/shop/            大厅和趋势小报
-js/themes/<id>/     每台机器的配置（index.js）和美术素材（art.js）
-js/dev/, dev/       主题素材图鉴（dev/gallery.html?theme=<id>）
-assets/models/      MediaPipe 人脸检测和人像分割模型
-tests/              Playwright 端到端测试和截图脚本
+index.html
+css/app.css            设计变量（浅色 / 深色）、侧栏、首页、弹层
+css/booth.css          对话栏、Dock、Artifact 面板、取景器、涂鸦、出片
+js/main.js             路由：#/ 首页，#/booth 拍摄，#/p/<id> 回看
+js/core/               DOM、工具函数、字体预载、文字排版、WebAudio 音效、存储
+js/art/                星芒、吉祥物小芒和演示场景、手绘墨线工具、图标、贴纸、文字贴纸
+js/photo/              版式、相框、合成、WebGL 滤镜、摄像头、涂鸦编辑器、画笔
+js/app/                外壳、首页、拍摄流程（steps/）、对话、Dock、Artifact 面板、回看页
+js/data/               模型设定和 Claude 的台词
+dev/gallery.html       素材图鉴
+tests/                 Playwright 端到端测试和截图脚本
 ```
+
+几个可以单独看的部分：
+
+- `js/art/spark.js`：星芒是一组长短不一的圆头射线，可以呼吸、旋转、加描边，同时输出 Canvas `Path2D` 和 SVG path。
+- `js/art/mascot.js`：小芒的 11 种姿势（外加待机），以及没有摄像头时替代摄像头的演示场景（有背景虚化、灯串光斑、颗粒和暗角）。
+- `js/photo/fx.js`：滤镜着色器和 ASCII 渲染。
+- `js/photo/editor.js`：涂鸦编辑器。所有东西按打印像素记录，出片时按全分辨率重新绘制。
 
 ## 开发与测试
 
 ```bash
-npm install                         # 安装 Playwright（只有测试需要）
-npm start                           # 本地服务器
-node tests/e2e.cjs classic kpop     # 用 Chromium 假摄像头把指定机器从头拍到尾，截图存到 test-results/
-DEMO=1 node tests/e2e.cjs meme      # 拒绝摄像头权限，走「店猫演示模式」
-node tests/gallery.cjs y2k          # 截图某台机器的全部素材（道具会戴在人形假人和店猫上）
+npm install                                  # 只装 Playwright，测试才需要
+npm test                                     # 用 Chromium 假摄像头把 Sonnet 从头拍到尾，截图存到 test-results/
+MODEL=opus DEMO=1 node tests/e2e.mjs         # 拒绝摄像头权限，让小芒当模特
+MODEL=haiku MOBILE=1 node tests/e2e.mjs      # 手机尺寸
+TITLE="ultrathink 周末" node tests/e2e.mjs    # 扩展思考
+node tests/shot.mjs "/dev/gallery.html?s=frames,stickers,filters" test-results/g.png 1500 1000 --full
+node tests/screens.mjs                       # 重新生成 README 里的截图
 ```
 
-`tests/e2e.cjs` 还支持 `NOFONTS=1`（网络不稳时跳过网页字体）和 `JPEG=1`（输出体积更小的截图）。
+URL 加 `?fast=1` 会缩短所有倒数和计时，方便调试。素材图鉴 `dev/gallery.html?s=spark,mascot,scene,frames,stickers,filters` 能一次看到所有素材，相框部分支持 `frame=`、`layout=`、`title=`、`scale=` 参数。
 
-新增一台机器：复制 `js/themes/classic/`，按 [docs/THEME_API.md](docs/THEME_API.md) 改配置和素材，再把 id 加到 `js/themes/index.js`。
+## 说明
 
-## 第三方资源
-
-- [MediaPipe Tasks Vision](https://github.com/google-ai-edge/mediapipe)：人脸检测（BlazeFace short range）和人像分割（selfie segmenter）模型，Apache License 2.0。
-- 字体来自 Google Fonts（SIL Open Font License）。
+- 这是一个粉丝向的练习项目，和 Anthropic 没有关联。Claude 是 Anthropic 的商标。星芒图形是仿照 Claude 标志的风格用代码画的，不是官方素材。
+- 配色取自 Anthropic 公开的 brand-guidelines skill（[anthropics/skills](https://github.com/anthropics/skills/blob/main/skills/brand-guidelines/SKILL.md)）：`#141413` `#faf9f5` `#d97757` `#6a9bcc` `#788c5d` `#b0aea5` `#e8e6dc`，其余是从这几个颜色调出来的辅助色。
+- 字体来自 Google Fonts：Lora、Poppins、Noto Serif SC、Noto Sans SC、JetBrains Mono、Caveat、Long Cang（SIL Open Font License）。加载失败时会退回系统字体。

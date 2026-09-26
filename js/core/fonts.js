@@ -1,44 +1,35 @@
-// Canvas text only uses a web font once it has been downloaded, so machines
-// ask for their fonts up front (with a timeout so offline use still works).
+// Web fonts for canvas drawing. CJK families on Google Fonts are split into
+// unicode-range slices, so a canvas can only use glyphs that were requested
+// first: call need(font, text) before drawing text you did not preload.
 
-const loaded = new Set();
-const BASE_SAMPLE = '大头贴ABCabc123가나あい';
+export const FAMILY = {
+  serif: '"Lora", "Noto Serif SC", Georgia, "Songti SC", serif',
+  serifCn: '"Noto Serif SC", "Lora", Georgia, "Songti SC", serif',
+  sans: '"Poppins", "Noto Sans SC", system-ui, "PingFang SC", sans-serif',
+  sansCn: '"Noto Sans SC", "Poppins", system-ui, "PingFang SC", sans-serif',
+  mono: '"JetBrains Mono", "Noto Sans SC", ui-monospace, Menlo, monospace',
+  hand: '"Caveat", "Long Cang", cursive',
+  handCn: '"Long Cang", "Caveat", cursive',
+};
 
-/**
- * Preload font families. CJK web fonts are split by unicode range, so pass
- * every non-Latin string the theme draws on canvas in `text`.
- */
-export async function ensureFonts(families = [], text = '') {
-  if (!document.fonts?.load) return;
-  const sample = BASE_SAMPLE + uniq(text);
-  const key = (f) => `${f}|${sample}`;
-  const todo = families.filter((f) => !loaded.has(key(f)));
-  if (!todo.length) return;
-  const jobs = todo.map((f) =>
-    Promise.all([400, 700, 900].map((w) => document.fonts.load(`${w} 48px "${f}"`, sample)))
-      .then(() => loaded.add(key(f)))
-      .catch(() => {}),
-  );
-  await Promise.race([Promise.all(jobs), new Promise((r) => setTimeout(r, 4000))]);
-}
+export const font = (weight, size, family = 'serif') => `${weight} ${Math.round(size * 100) / 100}px ${FAMILY[family] || family}`;
 
-function uniq(text) {
-  return [...new Set(String(text))].join('');
-}
+const cache = new Map();
 
-/** Everything a theme draws with web fonts, for ensureFonts(). */
-export function themeText(t) {
-  const parts = [t.fonts?.text || '', ...(t.phrases || []), ...(t.captions?.presets || []), ...(t.sampleCaptions || []), t.title || '', t.name || ''];
-  for (const s of t.stickers || []) if (s.fontSpec) parts.push(s.fontSpec.text);
-  return uniq(parts.join(''));
-}
-
-/** Load fonts for specific text (CJK fonts are split by unicode range). */
-export async function ensureText(font, text) {
-  if (!document.fonts?.load) return;
-  try {
-    await Promise.race([document.fonts.load(font, text), new Promise((r) => setTimeout(r, 1500))]);
-  } catch {
-    /* ignore */
+export function need(spec, text = '') {
+  if (!document.fonts?.load) return Promise.resolve();
+  const chars = [...new Set(text)].sort().join('');
+  const key = `${spec}|${chars}`;
+  if (!cache.has(key)) {
+    const p = Promise.race([
+      document.fonts.load(spec, chars || 'Aa').catch(() => []),
+      new Promise((r) => setTimeout(r, 3500)),
+    ]);
+    cache.set(key, p);
   }
+  return cache.get(key);
+}
+
+export function needAll(pairs) {
+  return Promise.all(pairs.filter(Boolean).map(([spec, text]) => need(spec, text)));
 }

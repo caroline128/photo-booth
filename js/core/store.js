@@ -1,97 +1,80 @@
-// Persistent state: tokens in the wallet, sound settings and the photo wall.
-// Everything is wrapped in try/catch because storage can be unavailable
-// (private windows, blocked site data); the app must still work without it.
+// Settings live in localStorage; finished prints live in IndexedDB so they
+// survive reloads. Both are best-effort: private windows may refuse storage.
 
-import { Emitter } from './util.js';
+const PREFIX = 'claude-booth:';
+const DEFAULTS = { sound: true, voice: false, serial: 0, model: 'sonnet', thinking: false };
+const listeners = new Map();
 
-const KEY = 'kacha-photo-shop:v1';
-const DEFAULTS = { tokens: 12, sfx: true, voice: true, bgm: true, served: 0 };
-
-class Store extends Emitter {
-  constructor() {
-    super();
-    this.state = { ...DEFAULTS };
-    try {
-      const raw = localStorage.getItem(KEY);
-      if (raw) Object.assign(this.state, JSON.parse(raw));
-    } catch {
-      /* storage unavailable — keep defaults */
-    }
-  }
-  get(k) {
-    return this.state[k];
-  }
-  set(k, v) {
-    this.state[k] = v;
-    this._save();
-    this.emit('change', k, v);
-    this.emit(`change:${k}`, v);
-  }
-  _save() {
-    try {
-      localStorage.setItem(KEY, JSON.stringify(this.state));
-    } catch {
-      /* ignore */
-    }
-  }
-  spend(n) {
-    if (this.state.tokens < n) return false;
-    this.set('tokens', this.state.tokens - n);
-    return true;
-  }
-  earn(n) {
-    this.set('tokens', this.state.tokens + n);
-  }
-  nextSerial() {
-    const n = (this.state.served || 0) + 1;
-    this.set('served', n);
-    return n;
-  }
+function emit(type, payload) {
+  for (const fn of listeners.get(type) || []) fn(payload);
 }
 
-export const store = new Store();
+export function subscribe(type, fn) {
+  if (!listeners.has(type)) listeners.set(type, new Set());
+  listeners.get(type).add(fn);
+  return () => listeners.get(type).delete(fn);
+}
 
-// ---------------------------------------------------------------------------
-// Photo wall: prints the guest decided to pin up, kept in IndexedDB as blobs.
+export const settings = {
+  get(key) {
+    try {
+      const raw = localStorage.getItem(PREFIX + key);
+      return raw == null ? DEFAULTS[key] : JSON.parse(raw);
+    } catch {
+      return DEFAULTS[key];
+    }
+  },
+  set(key, value) {
+    try {
+      localStorage.setItem(PREFIX + key, JSON.stringify(value));
+    } catch {
+      /* storage unavailable: keep going with defaults */
+    }
+    emit('setting', { key, value });
+    emit(`setting:${key}`, value);
+  },
+  nextSerial() {
+    const n = (Number(this.get('serial')) || 0) + 1;
+    this.set('serial', n);
+    return n;
+  },
+};
 
-const DB_NAME = 'kacha-photo-wall';
+// ------------------------------------------------------------------ recents
+
+const DB = 'claude-booth';
+const STORE = 'prints';
 let dbp = null;
 
 function db() {
-  if (dbp) return dbp;
-  dbp = new Promise((resolve, reject) => {
-    try {
-      const req = indexedDB.open(DB_NAME, 1);
-      req.onupgradeneeded = () => req.result.createObjectStore('prints', { keyPath: 'id' });
+  if (!dbp)
+    dbp = new Promise((resolve, reject) => {
+      if (!window.indexedDB) return reject(new Error('no indexedDB'));
+      const req = indexedDB.open(DB, 1);
+      req.onupgradeneeded = () => req.result.createObjectStore(STORE, { keyPath: 'id' });
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error);
-    } catch (e) {
-      reject(e);
-    }
-  });
+    });
   return dbp;
 }
 
-async function tx(mode, fn) {
+async function tx(mode, run) {
   const d = await db();
   return new Promise((resolve, reject) => {
-    const t = d.transaction('prints', mode);
-    const s = t.objectStore('prints');
-    const r = fn(s);
-    t.oncomplete = () => resolve(r?.result);
+    const t = d.transaction(STORE, mode);
+    const result = run(t.objectStore(STORE));
+    t.oncomplete = () => resolve(result?.result ?? result);
     t.onerror = () => reject(t.error);
+    t.onabort = () => reject(t.error);
   });
 }
 
-export const wall = {
-  async add(entry) {
-    try {
-      await tx('readwrite', (s) => s.put(entry));
-      store.emit('wall');
-      return true;
-    } catch {
-      return false;
-    }
+export const recents = {
+  async add(rec) {
+    const item = { id: `p${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, created: Date.now(), ...rec };
+    await tx('readwrite', (s) => s.put(item));
+    emit('recents');
+    return item;
   },
   async list() {
     try {
@@ -101,12 +84,15 @@ export const wall = {
       return [];
     }
   },
-  async remove(id) {
+  async get(id) {
     try {
-      await tx('readwrite', (s) => s.delete(id));
-      store.emit('wall');
+      return await tx('readonly', (s) => s.get(id));
     } catch {
-      /* ignore */
+      return null;
     }
+  },
+  async remove(id) {
+    await tx('readwrite', (s) => s.delete(id));
+    emit('recents');
   },
 };

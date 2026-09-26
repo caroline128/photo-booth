@@ -1,72 +1,68 @@
-// Small shared helpers: DOM building, math, timing, seeded randomness.
-
-/**
- * Hyperscript-style element builder.
- *   h('button.btn.primary', { onclick }, 'OK')
- * Props starting with "on" become listeners, `style` may be an object,
- * `dataset` an object, anything else is set as attribute/property.
- */
-export function h(tag, props, ...children) {
-  const [name, ...classes] = tag.split('.');
-  const el = document.createElement(name || 'div');
-  if (classes.length) el.className = classes.join(' ');
-  if (props && (typeof props !== 'object' || props instanceof Node || Array.isArray(props))) {
-    children.unshift(props);
-    props = null;
-  }
-  if (props) {
-    for (const [k, v] of Object.entries(props)) {
-      if (v == null || v === false) continue;
-      if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2).toLowerCase(), v);
-      else if (k === 'style' && typeof v === 'object') {
-        for (const [sk, sv] of Object.entries(v)) {
-          if (sk.startsWith('--')) el.style.setProperty(sk, sv);
-          else el.style[sk] = sv;
-        }
-      }
-      else if (k === 'dataset') Object.assign(el.dataset, v);
-      else if (k === 'class') el.className += (el.className ? ' ' : '') + v;
-      else if (k === 'html') el.innerHTML = v;
-      else if (k in el && typeof v !== 'string') el[k] = v;
-      else el.setAttribute(k, v === true ? '' : v);
-    }
-  }
-  appendChildren(el, children);
-  return el;
-}
-
-function appendChildren(el, children) {
-  for (const c of children) {
-    if (c == null || c === false) continue;
-    if (Array.isArray(c)) appendChildren(el, c);
-    else el.appendChild(c instanceof Node ? c : document.createTextNode(String(c)));
-  }
-}
-
-export const $ = (sel, root = document) => root.querySelector(sel);
-export const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+// Small helpers shared across the app.
 
 export const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 export const lerp = (a, b, t) => a + (b - a) * t;
 export const TAU = Math.PI * 2;
 
-export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-export const nextFrame = () => new Promise((r) => requestAnimationFrame(() => r()));
+export const ease = {
+  outCubic: (t) => 1 - (1 - t) ** 3,
+  inOutCubic: (t) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2),
+  outBack: (t, s = 1.70158) => 1 + (s + 1) * (t - 1) ** 3 + s * (t - 1) ** 2,
+  outQuint: (t) => 1 - (1 - t) ** 5,
+  inOutSine: (t) => -(Math.cos(Math.PI * t) - 1) / 2,
+};
 
-/** Deterministic PRNG (mulberry32) so glitter pens re-render identically at print time. */
-export function seeded(seed) {
-  let t = seed >>> 0;
+// Deterministic PRNG (mulberry32) so drawings look the same every render.
+export function rng(seed = 1) {
+  let a = seed >>> 0 || 0x9e3779b9;
   return () => {
-    t += 0x6d2b79f5;
-    let r = Math.imul(t ^ (t >>> 15), 1 | t);
-    r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
-    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
 
-export const rand = (a = 1, b) => (b === undefined ? Math.random() * a : a + Math.random() * (b - a));
-export const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-export const uid = () => Math.random().toString(36).slice(2, 9);
+export function hash(str) {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) h = Math.imul(h ^ str.charCodeAt(i), 16777619);
+  return h >>> 0;
+}
+
+export const pick = (arr, r = Math.random) => arr[Math.floor(r() * arr.length)];
+
+export function shuffle(arr, r = Math.random) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(r() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+export function abortError() {
+  return new DOMException('Aborted', 'AbortError');
+}
+
+export const isAbort = (e) => e?.name === 'AbortError';
+
+export function sleep(ms, signal) {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) return reject(abortError());
+    const id = setTimeout(done, ms);
+    function done() {
+      signal?.removeEventListener('abort', stop);
+      resolve();
+    }
+    function stop() {
+      clearTimeout(id);
+      reject(abortError());
+    }
+    signal?.addEventListener('abort', stop, { once: true });
+  });
+}
+
+export const nextFrame = () => new Promise((r) => requestAnimationFrame(r));
 
 export function canvas(w, h) {
   const c = document.createElement('canvas');
@@ -75,119 +71,79 @@ export function canvas(w, h) {
   return c;
 }
 
-/** Wait for a CSS animation/transition on `el` or a timeout, whichever comes first. */
-export function waitAnim(el, ms = 1200, type = 'animationend') {
-  return new Promise((resolve) => {
-    let done = false;
-    const fin = () => {
-      if (done) return;
-      done = true;
-      el.removeEventListener(type, fin);
-      resolve();
-    };
-    el.addEventListener(type, fin);
-    setTimeout(fin, ms);
-  });
+export const dpr = () => Math.min(2, window.devicePixelRatio || 1);
+
+export const reducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+export const pad = (n, k = 2) => String(n).padStart(k, '0');
+
+export function fmtDate(d = new Date(), sep = '.') {
+  return [d.getFullYear(), pad(d.getMonth() + 1), pad(d.getDate())].join(sep);
 }
 
-/** Format a date like the stamps on booth prints. */
-export function stamp(date = new Date(), style = 'dot') {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  if (style === 'ccd') return `'${String(y).slice(2)} ${m} ${d}`;
-  if (style === 'slash') return `${y}/${m}/${d}`;
-  return `${y}.${m}.${d}`;
+export function fmtTime(d = new Date()) {
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-/**
- * Cancellable countdown helper. Calls onTick(secondsLeft) every second,
- * resolves when it reaches 0 or when `skip()` is called.
- */
-export function countdown(seconds, onTick) {
-  let timer = null;
-  let resolveFn;
-  let left = seconds;
-  const p = new Promise((resolve) => {
-    resolveFn = resolve;
-    onTick?.(left);
-    timer = setInterval(() => {
-      left -= 1;
-      onTick?.(left);
-      if (left <= 0) {
-        clearInterval(timer);
-        resolve('done');
-      }
-    }, 1000);
-  });
-  p.skip = () => {
-    clearInterval(timer);
-    resolveFn('skipped');
-  };
-  p.cancel = () => {
-    clearInterval(timer);
-    resolveFn('cancelled');
-  };
-  return p;
+export function fmtClock(sec) {
+  const s = Math.max(0, Math.ceil(sec));
+  return `${pad(Math.floor(s / 60))}:${pad(s % 60)}`;
 }
 
-/** Save a Blob as a file. */
-export function downloadBlob(blob, filename) {
+export function toBlob(c, type = 'image/png', quality) {
+  return new Promise((resolve, reject) =>
+    c.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), type, quality),
+  );
+}
+
+export function download(blob, name) {
   const url = URL.createObjectURL(blob);
-  const a = h('a', { href: url, download: filename });
-  document.body.appendChild(a);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  document.body.append(a);
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 4000);
 }
 
-/** Download a canvas as PNG. */
-export function downloadCanvas(cnv, filename) {
-  return new Promise((resolve) => {
-    cnv.toBlob((blob) => {
-      downloadBlob(blob, filename);
-      resolve();
-    }, 'image/png');
-  });
-}
-
-export function loadImage(src) {
+// Resolve when `type` fires on `target`, or reject when the signal aborts.
+export function when(target, type, signal) {
   return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.decoding = 'async';
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = src;
+    if (signal?.aborted) return reject(abortError());
+    const stop = () => {
+      target.removeEventListener(type, go);
+      reject(abortError());
+    };
+    const go = (e) => {
+      signal?.removeEventListener('abort', stop);
+      resolve(e);
+    };
+    target.addEventListener(type, go, { once: true });
+    signal?.addEventListener('abort', stop, { once: true });
   });
 }
 
-export const svgUrl = (svg) => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
-
-/** Rounded rectangle path helper for 2D contexts. */
-export function rrect(ctx, x, y, w, h, r) {
-  r = Math.min(r, w / 2, h / 2);
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.arcTo(x + w, y, x + w, y + h, r);
-  ctx.arcTo(x + w, y + h, x, y + h, r);
-  ctx.arcTo(x, y + h, x, y, r);
-  ctx.arcTo(x, y, x + w, y, r);
-  ctx.closePath();
+// A promise with its resolve/reject exposed, rejected when `signal` aborts.
+export function deferred(signal) {
+  let resolve, reject;
+  const promise = new Promise((a, b) => {
+    resolve = a;
+    reject = b;
+  });
+  // Leftover deferreds (e.g. an unused "skip") must not surface as unhandled
+  // rejections when the session is aborted; awaiting one still rejects.
+  promise.catch(() => {});
+  if (signal) {
+    if (signal.aborted) reject(abortError());
+    else signal.addEventListener('abort', () => reject(abortError()), { once: true });
+  }
+  return { promise, resolve, reject };
 }
 
-/** Simple event emitter mixin. */
-export class Emitter {
-  constructor() {
-    this._l = {};
-  }
-  on(ev, fn) {
-    (this._l[ev] ||= []).push(fn);
-    return () => this.off(ev, fn);
-  }
-  off(ev, fn) {
-    this._l[ev] = (this._l[ev] || []).filter((f) => f !== fn);
-  }
-  emit(ev, ...args) {
-    for (const f of this._l[ev] || []) f(...args);
-  }
+export function query() {
+  return new URLSearchParams(location.search);
 }
+
+// Dev/test switch: ?fast=1 shortens countdowns and timers.
+export const FAST = query().has('fast');

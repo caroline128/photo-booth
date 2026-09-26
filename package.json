@@ -1,15 +1,15 @@
 {
-  "name": "kacha-photo-shop",
+  "name": "claude-photo-booth",
   "version": "1.0.0",
   "private": true,
-  "description": "复古风网页大头贴小店：6 台主题大头贴机，完整模拟线下拍摄、涂鸦和打印流程。",
+  "description": "Claude 大头贴照相馆：Claude 主题和风格的网页大头贴机，所有素材都用 JS 在 Canvas 上画。",
+  "type": "module",
   "scripts": {
-    "start": "node scripts/serve.mjs 5173",
-    "vendor": "node scripts/vendor-mediapipe.mjs",
-    "test:e2e": "node tests/e2e.cjs",
-    "gallery": "node tests/gallery.cjs"
+    "start": "node scripts/serve.mjs",
+    "test": "node tests/e2e.mjs",
+    "gallery": "node tests/gallery.mjs"
   },
   "devDependencies": {
-    "playwright": "^1.56.1"
+    "playwright": "1.56.1"
   }
 }

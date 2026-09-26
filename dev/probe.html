@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <title>Filter probe</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap"
+    />
+  </head>
+  <body style="margin: 0; background: #333">
+    <script type="module">
+      // One filter at full size: dev/probe.html?f=ascii&pose=peace&w=800&h=600
+      import { mascotPhoto } from '../js/art/mascot.js';
+      import { applyFilter } from '../js/photo/fx.js';
+      import { need } from '../js/core/fonts.js';
+      const q = new URLSearchParams(location.search);
+      await need('600 16px "JetBrains Mono"', ' .:-=+*oxO#%@');
+      const src = mascotPhoto(q.get('pose') || 'peace', 800, 600);
+      document.body.append(applyFilter(src, q.get('f') || 'ascii', 'natural', +(q.get('w') || 800), +(q.get('h') || 600)));
+    </script>
+  </body>
+</html>

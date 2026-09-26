@@ -1,122 +1,114 @@
-// Dev gallery: renders every prop (on the mannequin and the demo cat),
-// sticker, frame, filter, backdrop and text style of one theme so art can be
-// checked at a glance.  Open dev/gallery.html?theme=<id>
+// Dev gallery: every drawn asset on one page, for visual checks.
+// dev/gallery.html?s=spark,mascot,scene,frames,stickers,filters
 
-import { h, canvas as mkCanvas } from '../core/util.js';
-import { ensureFonts, themeText } from '../core/fonts.js';
-import { artBitmap } from '../art/render.js';
-import { Stage } from '../engine/stage.js';
-import { createDemoSource } from '../engine/camera.js';
-import { compose, slotAspect } from '../engine/compose.js';
-import { offlineFx, renderToCanvas } from '../engine/glfx.js';
-import { textArt } from '../engine/decorate.js';
-import { samplePrint, defaultOptions } from '../booth/sample.js';
-import { createMannequinSource } from './mannequin.js';
+import { h } from '../core/dom.js';
+import { canvas } from '../core/util.js';
+import { drawSpark, sparkSVG, SPARK_SEED } from '../art/spark.js';
+import { drawMascot, POSES, DemoScene, mascotPhoto, POSE_IDS } from '../art/mascot.js';
+import { LAYOUTS } from '../photo/layouts.js';
+import { FRAMES } from '../photo/frames/index.js';
+import { compose } from '../photo/compose.js';
+import { makeInfo } from '../photo/frames/common.js';
+import { FILTERS, BEAUTY, applyFilter } from '../photo/fx.js';
+import { STICKERS, GROUPS } from '../art/stickers.js';
+import { needAll } from '../core/fonts.js';
 
-const out = document.getElementById('out');
-const id = new URLSearchParams(location.search).get('theme') || 'classic';
+const root = document.getElementById('root');
+const want = new URLSearchParams(location.search).get('s')?.split(',') || ['spark', 'mascot', 'scene'];
+const fig = (node, cap) => h('figure', node, h('figcaption', cap));
 
-const section = (title, ...kids) => out.append(h('h2', title), h('div.grid', ...kids));
-const fig = (node, cap, cls = '') => h(`figure${cls ? '.' + cls : ''}`, node, h('figcaption', cap));
-const img = (c, height) => {
-  const i = h('img', { src: c.toDataURL('image/png') });
-  if (height) i.style.height = height + 'px';
-  return i;
-};
+const q = new URLSearchParams(location.search);
+const scale = Number(q.get('scale') || 0.3);
 
-async function main() {
-  const t = (await import(`../themes/${id}/index.js`)).default;
-  document.getElementById('title').textContent = `${t.name} · ${t.title} (${t.id})`;
-  await ensureFonts(t.fonts?.load || [], themeText(t));
-  // don't hang forever when a web font request stalls
-  await Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 5000))]);
-  const session = { options: defaultOptions(t) };
-
-  // sample print as shown in the lobby
-  const sample = h('img', { src: await samplePrint(t) });
-  section('Lobby sample (demo cat)', fig(sample, 'samplePrint'));
-
-  // props on the mannequin + demo cat
-  const layout = t.layouts[0];
-  const aspect = slotAspect(layout);
-  const man = createMannequinSource();
-  const cat = createDemoSource({ animate: false });
-  cat.renderAt(1.3);
-  const figs = [];
-  for (const p of t.props) {
-    const row = [];
-    for (const src of [man, cat]) {
-      const stage = new Stage({ source: src, aspect, preview: false });
-      await stage.setProps([p]);
-      const shot = stage.capture(520);
-      row.push(img(shot.raw, 200));
-    }
-    const bmp = await artBitmap(p, 160);
-    figs.push(fig(h('div', { style: { display: 'flex', gap: '6px', alignItems: 'center' } }, img(bmp, 80), ...row), `${p.id} · ${p.name} · anchor=${p.anchor}`));
-  }
-  section(`Props (${t.props.length}) — art · mannequin · cat`, ...figs);
-
-  // stickers
-  const sfigs = [];
-  for (const s of t.stickers) {
-    const bmp = await artBitmap(s, 170);
-    sfigs.push(fig(img(bmp, Math.min(170, bmp.height)), `${s.id} · ${s.name || ''}${s.group ? ' · ' + s.group : ''}`));
-  }
-  section(`Stickers (${t.stickers.length})`, ...sfigs);
-
-  // photos for frames: demo cat through liveFx + first filter
-  const photosFor = async (lay) => {
-    const st = new Stage({ source: cat, aspect: slotAspect(lay), preview: false });
-    await st.setProps((t.sampleProps || []).map((pid) => t.props.find((p) => p.id === pid)).filter(Boolean));
-    const res = [];
-    for (let i = 0; i < lay.photos; i++) {
-      cat.renderAt(1.3 + i * 2.5);
-      const shot = st.capture(640);
-      const fx = { ...(t.liveFx?.(session, shot.faces, shot.w, shot.h) || {}), ...t.filters[0].fx };
-      res.push(renderToCanvas(offlineFx(), shot.raw, fx, shot.w, shot.h));
-    }
-    return res;
-  };
-  const info = { theme: t, date: new Date(), serial: 123, options: session.options, captions: t.sampleCaptions || [] };
-  const ffigs = [];
-  for (const lay of t.layouts) {
-    const photos = await photosFor(lay);
-    for (const f of t.frames.filter((fr) => !fr.layouts || fr.layouts.includes(lay.id))) {
-      ffigs.push(fig(img(compose(lay, f, photos, info)), `${lay.id} / ${f.id} · ${f.name}`, 'frames'));
-      ffigs.push(fig(img(compose(lay, f, [], { ...info, placeholderTint: t.placeholderTint })), `placeholder`, 'frames'));
-    }
-  }
-  section('Layouts × frames', ...ffigs);
-
-  // filters
-  const st = new Stage({ source: cat, aspect, preview: false });
-  cat.renderAt(4);
-  const shot = st.capture(480);
-  const flt = t.filters.map((f) => fig(img(renderToCanvas(offlineFx(), shot.raw, { ...(t.liveFx?.(session, shot.faces, shot.w, shot.h) || {}), ...f.fx }, shot.w, shot.h), 180), `${f.id} · ${f.name}`));
-  const prev = fig(img(renderToCanvas(offlineFx(), shot.raw, { ...(t.liveFx?.(session, shot.faces, shot.w, shot.h) || {}), ...(t.previewFx || {}) }, shot.w, shot.h), 180), 'live preview look');
-  section('Filters', prev, ...flt);
-
-  // backgrounds
-  if (t.backgrounds?.length) {
-    const bfigs = t.backgrounds.map((bg) => {
-      const c = mkCanvas(360, 360 / aspect);
-      bg.paint(c.getContext('2d'), c.width, c.height, 0);
-      return fig(img(c, 180), `${bg.id} · ${bg.name}`);
-    });
-    section('Backgrounds', ...bfigs);
-  }
-
-  // text styles
-  const tfigs = [];
-  for (const ts of t.textStyles || []) {
-    const bmp = await artBitmap(textArt((t.phrases || ['文字'])[0], ts), 260);
-    tfigs.push(fig(img(bmp, 90), ts.name, 'dark'));
-  }
-  section('Text styles', ...tfigs);
-  document.body.dataset.ready = '1';
+function photosFor(L) {
+  const w = 640, h = Math.round(640 / L.aspect);
+  return POSE_IDS.slice(0, L.count).map((p) => mascotPhoto(p, w, h));
 }
 
-main().catch((e) => {
-  out.append(h('pre.err', String(e?.stack || e)));
-  document.body.dataset.ready = 'error';
-});
+const sections = {
+  async stickers() {
+    await needAll(STICKERS.flatMap((st) => st.fonts || []));
+    const out = [h('h2', `贴纸 Stickers · ${STICKERS.length}`)];
+    const bg = q.get('bg');
+    for (const g of GROUPS) {
+      const row = h('div.row');
+      for (const st of STICKERS.filter((x) => x.group === g.id)) {
+        const w = 220, hh = Math.round(w * st.ratio);
+        const c = canvas(w + 20, hh + 20);
+        const ctx = c.getContext('2d');
+        if (bg) {
+          ctx.fillStyle = bg;
+          ctx.fillRect(0, 0, c.width, c.height);
+        }
+        ctx.translate(10, 10);
+        st.draw(ctx, w, hh);
+        row.append(fig(c, `${st.name} · ${st.id}`));
+      }
+      out.push(h('h3', `${g.name} · ${g.id}`), row);
+    }
+    return out;
+  },
+  filters() {
+    const row = h('div.row');
+    const src = mascotPhoto(q.get('pose') || 'peace', 800, 600);
+    for (const f of FILTERS) row.append(fig(applyFilter(src, f, 'natural', 400, 300), f.name));
+    const row2 = h('div.row');
+    for (const b of BEAUTY) row2.append(fig(applyFilter(src, 'natural', b, 400, 300), `美颜 · ${b.name}`));
+    return [h('h2', '滤镜 Filters'), row, row2];
+  },
+  async frames() {
+    const out = [h('h2', '相框 Frames')];
+    const only = q.get('frame');
+    const title = q.get('title') ?? '周五下班后的我们';
+    for (const frame of FRAMES.filter((f) => !only || only.split(',').includes(f.id))) {
+      const row = h('div.row');
+      const onlyL = q.get('layout')?.split(',');
+      for (const L of Object.values(LAYOUTS)) {
+        if (frame.layouts && !frame.layouts.includes(L.id)) continue;
+        if (onlyL && !onlyL.includes(L.id)) continue;
+        const info = makeInfo({ title, modelName: L.count === 3 ? 'Haiku' : L.count === 4 ? 'Sonnet' : 'Opus' });
+        const { canvas: c } = await compose({ L, frame, photos: photosFor(L), info, scale });
+        row.append(fig(c, `${frame.name} · ${L.name}`));
+      }
+      out.push(h('h3', frame.name), row);
+    }
+    return out;
+  },
+  spark() {
+    const row = h('div.row');
+    for (let seed = 1; seed <= 12; seed++) {
+      const c = canvas(140, 140);
+      drawSpark(c.getContext('2d'), 70, 70, 62, { seed });
+      row.append(fig(c, `seed ${seed}${seed === SPARK_SEED ? ' ★' : ''}`));
+    }
+    const c = canvas(140, 140);
+    drawSpark(c.getContext('2d'), 70, 70, 56, { outline: '#141413', outlineWidth: 5 });
+    row.append(fig(c, 'outline'));
+    const img = h('img', { src: `data:image/svg+xml,${encodeURIComponent(sparkSVG(140))}`, width: 140, height: 140 });
+    row.append(fig(img, 'svg'));
+    return [h('h2', '星芒 Spark'), row];
+  },
+  mascot() {
+    const row = h('div.row');
+    for (const style of ['plush', 'ink'])
+      for (const pose of Object.keys(POSES)) {
+        const c = canvas(220, 220);
+        drawMascot(c.getContext('2d'), 110, 118, 50, { pose, t: 0.6, style });
+        row.append(fig(c, `${pose} · ${style}`));
+      }
+    return [h('h2', '小芒 Mascot'), row];
+  },
+  scene() {
+    const row = h('div.row');
+    for (const pose of ['idle', 'peace', 'think', 'cheer']) {
+      const s = new DemoScene(640, 480);
+      s.setPose(pose, -10);
+      s.update(performance.now() + 2000);
+      row.append(fig(s.el, pose));
+    }
+    return [h('h2', '演示场景 Demo scene'), row];
+  },
+};
+
+for (const key of want) if (sections[key]) root.append(...[await sections[key]()].flat());
+document.body.dataset.ready = '1';
