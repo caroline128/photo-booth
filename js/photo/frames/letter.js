@@ -171,7 +171,8 @@ export default {
       [font(600, S.hello, 'serif'), t.hello],
       [font(400, S.body, 'serif'), t.body + t.wish + t.wish2 + t.date + t.ps + '…'],
       [font('italic 500', S.sign, 'serif'), t.sign],
-      [font(600, 14, 'sans'), 'CLAUDE' + String(info.modelName || '').toUpperCase() + 'PHOTO BOOTH'],
+      [font(600, 14, 'sans'), 'CLAUDE'],
+      [font(500, 14, 'sans'), String(info.modelName || '').toUpperCase() + 'CLAUDE PHOTO BOOTH'],
       [font(500, 14, 'mono'), '0123456789.'],
     ];
   },

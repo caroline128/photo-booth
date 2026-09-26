@@ -1203,10 +1203,11 @@ export const STICKERS = [
       ctx.arc(u * 0.5, u * 0.52, u * 0.075, 0, TAU);
       ctx.fill();
       ctx.fillStyle = C.paper;
-      ctx.beginPath();
-      ctx.arc(u * 0.455, u * 0.475, u * 0.03, 0, TAU);
-      ctx.arc(u * 0.54, u * 0.565, u * 0.012, 0, TAU);
-      ctx.fill();
+      for (const [x, y, r] of [[0.455, 0.475, 0.03], [0.54, 0.565, 0.012]]) {
+        ctx.beginPath();
+        ctx.arc(u * x, u * y, u * r, 0, TAU);
+        ctx.fill();
+      }
       // flash pop
       ctx.fillStyle = GOLD;
       ctx.beginPath();

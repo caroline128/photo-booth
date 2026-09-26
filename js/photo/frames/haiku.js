@@ -3,6 +3,7 @@
 // gentle cascade, then the colophon (丙午年秋 Claude 题) and a red seal.
 
 import { font } from '../../core/fonts.js';
+import { fit, ellipsize } from '../../core/text.js';
 import { rng, TAU } from '../../core/util.js';
 import { paper } from '../../art/ink.js';
 import { sparkPath } from '../../art/spark.js';
@@ -35,25 +36,27 @@ function colophon(info) {
 const poemOf = (info) => (info.haiku?.length ? info.haiku : HAIKU[0]);
 const titleOf = (info) => info.title || FALLBACK;
 
-// Split text into vertical cells: CJK upright, Latin runs and brackets sideways.
+// Split text into vertical cells: CJK upright; Latin words and brackets
+// turned sideways; spaces become small gaps.
 function cells(ctx, text, fs) {
   const out = [];
   let run = '';
   const flush = () => {
-    const t = run.trim();
-    if (t) out.push({ t, side: true, h: ctx.measureText(t).width + fs * 0.3 });
+    if (run) out.push({ t: run, side: true, h: ctx.measureText(run).width + fs * 0.16 });
     run = '';
   };
+  const gap = (h) => out.length && !out[out.length - 1].gap && out.push({ t: '', gap: true, h });
   for (const ch of text) {
     if (SIDEWAYS.test(ch)) {
       flush();
       out.push({ t: ch, side: true, h: Math.max(ctx.measureText(ch).width, fs * 0.5) + fs * 0.08 });
+    } else if (ch === '　' || ch === ' ') {
+      flush();
+      gap(fs * (ch === ' ' ? 0.3 : 0.6));
     } else if (CJK.test(ch)) {
       flush();
-      if (ch === '　') out.push({ t: '', h: fs * 0.6 });
-      else out.push({ t: ch, h: fs * LEAD, corner: CORNER.test(ch) });
-    } else if (ch === ' ' && !run) out.push({ t: '', h: fs * 0.3 });
-    else run += ch;
+      out.push({ t: ch, h: fs * LEAD, corner: CORNER.test(ch) });
+    } else run += ch;
   }
   flush();
   return out;
@@ -67,7 +70,13 @@ function column(ctx, cs, x, y, fs) {
   ctx.textBaseline = 'middle';
   let cy = y;
   for (const c of cs) {
-    if (c.side) {
+    if (c.dots) {
+      for (let k = -1; k <= 1; k++) {
+        ctx.beginPath();
+        ctx.arc(x, cy + c.h / 2 + k * fs * 0.28, fs * 0.07, 0, TAU);
+        ctx.fill();
+      }
+    } else if (c.side) {
       ctx.save();
       ctx.translate(x, cy + c.h / 2);
       ctx.rotate(Math.PI / 2);
@@ -79,12 +88,13 @@ function column(ctx, cs, x, y, fs) {
   return cy;
 }
 
-// Break cells into columns no taller than maxH.
+// Break cells into columns no taller than maxH (gaps never start a column).
 function columns(cs, maxH) {
   const cols = [[]];
   let h = 0;
   for (const c of cs) {
     if (h + c.h > maxH && cols[cols.length - 1].length) {
+      if (c.gap) continue;
       cols.push([]);
       h = 0;
     }
@@ -92,6 +102,21 @@ function columns(cs, maxH) {
     h += c.h;
   }
   return cols;
+}
+
+// Small vertical text in at most `max` columns: shrink first, then cut with an ellipsis.
+function fitColumns(ctx, text, size, min, maxH, max) {
+  for (let fs = size; fs >= min; fs--) {
+    ctx.font = font(400, fs, 'serif');
+    const cols = columns(cells(ctx, text, fs), maxH);
+    if (cols.length <= max) return { fs, cols };
+  }
+  ctx.font = font(400, min, 'serif');
+  const cs = cells(ctx, text, min);
+  const dots = { t: '', dots: true, h: min * LEAD };
+  while (cs.length && columns([...cs, dots], maxH).length > max) cs.pop();
+  while (cs.length && (cs[cs.length - 1].gap || cs[cs.length - 1].corner)) cs.pop();
+  return { fs: min, cols: columns([...cs, dots], maxH) };
 }
 
 // Square seal with rough edges and a spark knocked out in paper colour.
@@ -189,18 +214,19 @@ export default {
     if (vertical) {
       const step = fs * 1.85;
       const ts = Math.max(n ? 15 : 20, fs * 0.42);
+      const title = fitColumns(ctx, titleOf(info), ts, n ? 12 : 16, P.h, 2);
       ctx.font = font(400, ts, 'serif');
-      const tcols = columns(cells(ctx, titleOf(info), ts), P.h).slice(0, 2);
-      const ccols = columns(cells(ctx, `${colophon(info)}　Claude 题`, ts), P.h * 0.72).slice(0, 2);
+      const ccols = columns(cells(ctx, `${colophon(info)}　Claude 题`, ts), P.h * 0.72);
       const sealS = Math.max(ts * 2.4, fs * 1.02);
-      const tw = tcols.length * ts * 1.5;
+      const tw = title.cols.length * title.fs * 1.5;
       const cw = ccols.length * ts * 1.5;
       const total = tw + fs * 0.7 + lines.length * step + fs * 0.1 + Math.max(cw, sealS);
       let x = P.x + P.w / 2 + total / 2; // right edge of the group
 
       // title, top right
       ctx.fillStyle = SOFT;
-      tcols.forEach((c, i) => column(ctx, c, x - ts * 0.75 - i * ts * 1.5, P.y, ts));
+      ctx.font = font(400, title.fs, 'serif');
+      title.cols.forEach((c, i) => column(ctx, c, x - title.fs * 0.75 - i * title.fs * 1.5, P.y, title.fs));
       x -= tw + fs * 0.7;
 
       // the poem, right to left
@@ -221,24 +247,28 @@ export default {
       ccols.forEach((c, i) => column(ctx, c, cx + (ccols.length - 1) * ts * 0.75 - i * ts * 1.5, cy, ts));
       seal(ctx, cx, cy + ch + sealS * 0.72, sealS, info.seed);
     } else {
-      // too tight for columns: three centred lines, then the colophon and seal
-      fs = n ? 27 : 34;
+      // too long for columns: centred lines, then the colophon and the seal
+      fs = Math.min(n ? 30 : 40, P.h / (lines.length * 1.7 + 3.4));
       const lh = fs * 1.7;
       const cx = L.W / 2;
+      const y0 = P.y + (P.h - fs * (lines.length * 1.7 + 2.4)) / 2;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'alphabetic';
       ctx.fillStyle = SOFT;
-      ctx.font = font(400, fs * 0.6, 'serif');
-      ctx.fillText(`— ${titleOf(info)} —`, cx, P.y + fs * 0.6);
+      const t = `— ${titleOf(info)} —`;
+      fit(ctx, t, P.w, { max: fs * 0.62, min: 10, weight: 400, family: 'serif' });
+      ctx.fillText(ellipsize(ctx, t, P.w), cx, y0 + fs * 0.6);
       ctx.fillStyle = INK;
-      ctx.font = font(400, fs, 'serif');
-      lines.forEach((ln, i) => ctx.fillText(ln, cx, P.y + fs * 2 + i * lh));
-      const sy = P.y + fs * 2 + lines.length * lh;
+      lines.forEach((ln, i) => {
+        fit(ctx, ln, P.w, { max: fs, min: 10, weight: 400, family: 'serif' });
+        ctx.fillText(ln, cx, y0 + fs * 2 + i * lh);
+      });
+      const sy = y0 + fs * 2 + (lines.length - 0.2) * lh;
       ctx.fillStyle = SOFT;
       ctx.font = font(400, fs * 0.6, 'serif');
       ctx.textAlign = 'right';
-      ctx.fillText(`${colophon(info)}　Claude 题`, cx + fs * 2.2, sy);
-      seal(ctx, cx + fs * 3.3, sy - fs * 0.25, fs * 1.4, info.seed);
+      ctx.fillText(`${colophon(info)}　Claude 题`, cx + fs * 2.4, sy);
+      seal(ctx, cx + fs * 3.5, sy - fs * 0.22, fs * 1.3, info.seed);
     }
     ctx.restore();
   },
