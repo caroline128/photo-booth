@@ -644,7 +644,7 @@ export const STICKERS = [
       drawSpark(ctx, b.x + b.h * 0.56, cy, b.h * 0.26);
       ctx.textBaseline = 'middle';
       const tx = b.x + b.h;
-      fit(ctx, parts.map((p) => p[0]).join(''), b.x + b.w - b.h * 0.4 - tx, { max: b.h * 0.36, min: 6, weight: 500, family: 'mono' });
+      fit(ctx, parts.map((p) => p[0]).join(''), b.x + b.w - b.h * 0.4 - tx, { max: b.h * 0.36, min: 2, weight: 500, family: 'mono' });
       runs(ctx, parts, tx, cy);
       ctx.restore();
     },

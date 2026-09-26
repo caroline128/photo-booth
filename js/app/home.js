@@ -30,6 +30,8 @@ const SLASH = {
   '/terminal': { frame: 'terminal' },
   '/paper': { frame: 'paper' },
   '/card': { frame: 'card' },
+  '/doodle': { frame: 'doodle' },
+  '/letter': { frame: 'letter' },
   '/ascii': { filter: 'ascii' },
   '/ink': { filter: 'ink' },
   '/riso': { filter: 'riso' },
